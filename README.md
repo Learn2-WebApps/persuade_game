@@ -705,7 +705,8 @@ node scripts/seed.js
 # 1. .dev.vars 생성 (serviceAccountKey.json에서 Firebase 값 자동 추출)
 node scripts/make-dev-vars.js
 #    → 생성된 .dev.vars 를 열어 GEMINI_API_KEY 와 ADMIN_ID / ADMIN_PASSWORD 를 실제 값으로 수정
-#    (serviceAccountKey.json 이 없다면 .dev.vars.example 을 복사해 직접 채워도 된다)
+#    (serviceAccountKey.json 이 없다면 위 "필요한 환경변수" 표를 보고 .dev.vars 를 직접 만들어도 된다.
+#     로컬에서는 ENVIRONMENT=development 도 함께 넣어야 관리자 기본값 폴백이 동작한다)
 
 # 2. 로컬 서버 실행
 npm run dev        # web(Vite, :5173) + api(wrangler, :8788) 동시 실행
