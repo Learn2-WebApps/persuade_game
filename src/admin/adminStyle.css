@@ -1,0 +1,675 @@
+/* ─────────────────────────────────────────────
+   관리자 대시보드 — 파스텔 톤 유지, 정보 위주로 깔끔하게
+   ───────────────────────────────────────────── */
+
+.admin {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 18px 16px 32px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.admin-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.admin-title {
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+}
+
+.admin-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 학습자 첫 화면으로 돌아가기 */
+.topbar-home {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 2px solid #e8dcee;
+  background: #fff;
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.18s ease, border-color 0.18s ease;
+}
+
+.topbar-home:hover {
+  color: #7c3aed;
+  border-color: #c9b0ea;
+}
+
+.admin-body {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 14px;
+  align-items: start;
+}
+
+@media (max-width: 760px) {
+  .admin-body {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── 공통 패널/컨트롤 ───────────────────────── */
+.panel,
+.admin-rooms {
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 16px 18px;
+}
+
+.admin-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-weight: 800;
+  font-size: 14px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.panel-note {
+  font-weight: 600;
+  font-size: 11px;
+  color: var(--ink-soft);
+}
+
+.admin-muted {
+  color: var(--ink-soft);
+  font-size: 13px;
+  padding: 8px 0;
+  line-height: 1.7;
+}
+
+.admin-input {
+  border: 2px solid #eee3f2;
+  background: #fff;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--ink);
+  outline: none;
+  width: 100%;
+}
+
+.admin-input:focus {
+  border-color: var(--pink);
+}
+
+.admin-btn {
+  position: relative;
+  border: none;
+  background: linear-gradient(135deg, var(--pink), #ff6fa5);
+  color: #fff;
+  font-weight: 800;
+  font-size: 13px;
+  font-family: inherit;
+  padding: 10px 18px;
+  border-radius: 999px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(255, 111, 165, 0.4);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.admin-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.admin-btn.ghost {
+  background: rgba(255, 255, 255, 0.85);
+  color: #3d87c4;
+  border: 2px solid var(--sky);
+  box-shadow: none;
+}
+
+.admin-btn .spinner {
+  display: none;
+  width: 14px;
+  height: 14px;
+  border: 3px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.admin-btn.loading .btn-label {
+  display: none;
+}
+
+.admin-btn.loading .spinner {
+  display: inline-block;
+}
+
+.mini-btn {
+  border: 2px solid #e8dcee;
+  background: #fff;
+  color: var(--ink-soft);
+  font-weight: 800;
+  font-size: 12px;
+  font-family: inherit;
+  padding: 5px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.mini-btn:hover {
+  background: #f6eef7;
+}
+
+.form-error {
+  min-height: 16px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #e4566a;
+}
+
+/* ── 방 목록 ────────────────────────────────── */
+.new-room-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.room-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+/* 방 카드 + [삭제] 버튼 한 줄 */
+.room-row {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+}
+
+.room-row .room-item {
+  flex: 1;
+  min-width: 0;
+}
+
+.room-delete {
+  flex: 0 0 auto;
+  width: 38px;
+  border: 2px solid #f3dede;
+  background: #fff;
+  color: #c0574f;
+  font-size: 14px;
+  font-family: inherit;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.room-delete:hover:not(:disabled) {
+  background: #ffeceb;
+  border-color: #e4566a;
+}
+
+.room-delete:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.room-item {
+  text-align: left;
+  border: 2px solid transparent;
+  background: #fff;
+  border-radius: 14px;
+  padding: 10px 12px;
+  font-family: inherit;
+  color: var(--ink);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  transition: border-color 0.15s ease;
+}
+
+.room-item:hover {
+  border-color: var(--pink-soft);
+}
+
+.room-item.selected {
+  border-color: var(--pink);
+  background: #fff7fb;
+}
+
+.room-item-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.room-code {
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  font-size: 14px;
+}
+
+.room-status {
+  font-size: 11px;
+  font-weight: 800;
+  border-radius: 999px;
+  padding: 2px 10px;
+}
+
+.st-open {
+  background: #e2f8ec;
+  color: #1f9d61;
+}
+
+.st-closed {
+  background: #ffe3e3;
+  color: #b03a3a;
+}
+
+.st-etc {
+  background: #f2f0f7;
+  color: var(--ink-soft);
+}
+
+.room-item-name {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.room-item-meta {
+  font-size: 11px;
+  color: var(--ink-soft);
+}
+
+/* ── 트랙 뱃지 ──────────────────────────────── */
+.track-chip {
+  display: inline-block;
+  padding: 1px 7px;
+  margin-right: 4px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  vertical-align: middle;
+}
+
+.track-chip.track-work {
+  background: #e0ecff;
+  color: #1d4ed8;
+}
+
+.track-chip.track-life {
+  background: #ffe6f2;
+  color: #be1a63;
+}
+
+/* 트랙 도입 이전 방 — 새 코드와 호환되지 않으니 눈에 띄게 */
+.track-chip.track-legacy {
+  background: #f0eef2;
+  color: #8a8a9c;
+}
+
+.track-select-label {
+  margin-top: 6px;
+}
+
+/* ── 방 상세: 코드/상태 ─────────────────────── */
+.room-head-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.room-big-code {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.big-code-label {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--ink-soft);
+}
+
+.big-code {
+  font-size: 42px;
+  font-weight: 900;
+  letter-spacing: 0.22em;
+  background: linear-gradient(120deg, #ff6fa5, #7cc4f5);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  line-height: 1;
+}
+
+.copy-done {
+  font-size: 12px;
+  font-weight: 800;
+  color: #1f9d61;
+  min-width: 48px;
+}
+
+.room-head-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.room-head-name {
+  font-weight: 800;
+  font-size: 15px;
+}
+
+.status-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  user-select: none;
+}
+
+.status-toggle input {
+  width: 18px;
+  height: 18px;
+  accent-color: #1f9d61;
+  cursor: pointer;
+}
+
+/* ── 설정 폼 ────────────────────────────────── */
+.settings-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 12px;
+  align-items: end;
+}
+
+.settings-label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+.settings-hint {
+  font-size: 11px;
+  color: var(--ink-soft);
+  font-weight: 600;
+}
+
+.settings-saved {
+  font-size: 12px;
+  font-weight: 800;
+  color: #1f9d61;
+  align-self: center;
+}
+
+/* ── 참가자 모니터링 ────────────────────────── */
+.live-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #34c77b;
+  margin-left: 4px;
+  animation: blink 1.6s infinite;
+  vertical-align: middle;
+}
+
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.summary-card {
+  background: linear-gradient(160deg, #fff7fb, #f2f9ff);
+  border: 2px solid #f4e6f0;
+  border-radius: 14px;
+  padding: 12px;
+  text-align: center;
+}
+
+.summary-value {
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--ink);
+}
+
+.summary-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink-soft);
+  margin-top: 2px;
+}
+
+.players-table-wrap {
+  overflow-x: auto;
+}
+
+.players-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.players-table th,
+.players-table td {
+  padding: 9px 12px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.players-table thead th {
+  background: #f8f2fa;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--ink-soft);
+  letter-spacing: 0.04em;
+}
+
+.players-table tbody tr.player-row {
+  border-top: 1px solid #f3ecf5;
+  cursor: pointer;
+}
+
+.players-table tbody tr.player-row:hover {
+  background: #fdf6fb;
+}
+
+.players-table tbody tr.player-row.expanded {
+  background: #fff3f9;
+}
+
+.players-table .num {
+  text-align: right;
+}
+
+.chip {
+  font-size: 11px;
+  font-weight: 800;
+  border-radius: 999px;
+  padding: 2px 10px;
+}
+
+.chip-done {
+  background: #e2f8ec;
+  color: #1f9d61;
+}
+
+.chip-active {
+  background: var(--sky-soft);
+  color: #3d87c4;
+}
+
+.results-row td {
+  background: #fbf7fd;
+  border-top: 1px dashed #eadcf0;
+}
+
+.results-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 12px;
+  padding: 4px 0;
+}
+
+.results-scores {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* 참가자 최종 리포트 (관리자 뷰) */
+.admin-report {
+  background: #fff;
+  border: 1px solid #f0e2ec;
+  border-radius: 12px;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.admin-report-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-report-grade {
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--pink-deep, #ff6fa5);
+  flex-shrink: 0;
+}
+
+.admin-report-summary {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--ink);
+  white-space: normal;
+}
+
+.admin-report-details summary {
+  cursor: pointer;
+  font-weight: 800;
+  font-size: 12px;
+  color: #3d87c4;
+}
+
+.admin-report-details p {
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.7;
+  white-space: normal;
+}
+
+.admin-report-details q {
+  color: #7a4a63;
+  font-weight: 600;
+}
+
+.admin-report-none {
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+
+.stage-score {
+  border-radius: 999px;
+  padding: 4px 12px;
+  background: #f2f0f7;
+  color: var(--ink-soft);
+  font-weight: 700;
+}
+
+.stage-score.has {
+  background: #e8f4ff;
+  color: #2e6da4;
+}
+
+.stage-score em {
+  font-style: normal;
+  opacity: 0.7;
+}
+
+.table-hint {
+  font-size: 11px;
+  color: var(--ink-soft);
+  margin-top: 8px;
+}
+
+/* ── 트랙별 진행·결과 표시 ────────────────────── */
+.new-room-note {
+  font-size: 11px;
+  line-height: 1.5;
+  margin: 2px 0 4px;
+}
+
+.track-progress {
+  display: inline-block;
+  margin-right: 6px;
+  font-size: 11px;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+.results-track + .results-track {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px dashed rgba(120, 90, 140, 0.2);
+}
+
+.results-track-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.results-track-total {
+  font-size: 11px;
+  color: var(--ink-soft);
+}

@@ -1,0 +1,275 @@
+/* ═════════════════════════════════════════════════════════════
+   컷신 (오프닝 / 아웃트로)
+   배경 전체 + 하단 반투명 대사 박스 — 대화 화면과 같은 비주얼노벨 톤
+   ═════════════════════════════════════════════════════════════ */
+
+.cut {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  opacity: 1;
+  transition: opacity 0.32s ease;
+  cursor: pointer;
+}
+
+/* 컷신 종료 시 페이드 아웃 */
+.cut.cut-out {
+  opacity: 0;
+}
+
+/* ── 배경 ───────────────────────────────────────── */
+
+/* 실제 이미지가 없을 때 쓰는 장면별 그라데이션 */
+.cut-bg-placeholder {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(170deg, #2b3350 0%, #4a4668 55%, #6b5570 100%);
+  transition: background 0.9s ease;
+}
+
+/* 저녁 거리 — 어둡고 푸른 톤 */
+.cut-bg-placeholder[data-scene='street'] {
+  background: linear-gradient(170deg, #1e2740 0%, #38405f 50%, #5b4f66 100%);
+}
+/* 낯선 골목 — 더 좁고 어둡게, 끝에 옅은 빛 */
+.cut-bg-placeholder[data-scene='alley'] {
+  background:
+    radial-gradient(38% 30% at 50% 62%, rgba(255, 224, 170, 0.28), transparent 70%),
+    linear-gradient(170deg, #161c2e 0%, #2a2f47 60%, #3d3550 100%);
+}
+/* 서점 내부 — 따뜻한 등불 */
+.cut-bg-placeholder[data-scene='bookstore'] {
+  background:
+    radial-gradient(50% 40% at 50% 40%, rgba(255, 214, 150, 0.34), transparent 72%),
+    linear-gradient(170deg, #3a2b22 0%, #5a4130 55%, #7a5a3c 100%);
+}
+/* 책 표지 — 낡은 가죽/금박 */
+.cut-bg-placeholder[data-scene='book_cover'] {
+  background:
+    radial-gradient(46% 38% at 50% 46%, rgba(255, 232, 186, 0.3), transparent 70%),
+    linear-gradient(160deg, #4a2f22 0%, #6d4426 55%, #8a5c30 100%);
+}
+/* 책 펼침 — 빛나는 연출 */
+.cut-bg-placeholder[data-scene='book_open'] {
+  background:
+    radial-gradient(52% 42% at 50% 44%, rgba(255, 248, 214, 0.72), transparent 72%),
+    linear-gradient(170deg, #6b5a86 0%, #8f7aa8 50%, #c9a9c0 100%);
+}
+/* 노을 진 서점 */
+.cut-bg-placeholder[data-scene='bookstore_night'] {
+  background:
+    radial-gradient(46% 34% at 74% 32%, rgba(255, 176, 120, 0.42), transparent 72%),
+    linear-gradient(170deg, #3a2c3d 0%, #6a4550 55%, #a8695a 100%);
+}
+/* 노주인 클로즈업 */
+.cut-bg-placeholder[data-scene='owner'] {
+  background:
+    radial-gradient(40% 34% at 50% 40%, rgba(255, 226, 180, 0.4), transparent 70%),
+    linear-gradient(170deg, #33261f 0%, #55402f 55%, #6f5540 100%);
+}
+
+/* 실제 이미지 두 겹 — 크로스페이드 */
+.cut-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0;
+  transition: opacity 0.9s ease;
+}
+
+.cut-bg.show {
+  opacity: 1;
+}
+
+/* 하단을 어둡게 — 대사 가독성 */
+.cut-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 76% at 50% 20%, transparent 42%, rgba(10, 8, 20, 0.42) 100%),
+    linear-gradient(to bottom, transparent 42%, rgba(10, 8, 20, 0.66) 100%);
+}
+
+/* ── 건너뛰기 ───────────────────────────────────── */
+.cut-skip {
+  position: absolute;
+  right: 22px;
+  bottom: 22px;
+  z-index: 5;
+  padding: 9px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 999px;
+  background: rgba(20, 16, 30, 0.42);
+  color: rgba(255, 255, 255, 0.9);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+}
+
+.cut-skip:hover {
+  background: rgba(255, 255, 255, 0.92);
+  color: #4a4a5a;
+  border-color: #fff;
+}
+
+/* ── 대사 박스 ──────────────────────────────────── */
+.cut-stage {
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  padding: 0 20px 84px;
+  display: flex;
+  justify-content: center;
+}
+
+.cut-box {
+  width: min(1000px, 100%);
+  min-height: 132px;
+  padding: 26px 30px 18px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 14px 40px rgba(10, 8, 24, 0.4);
+  backdrop-filter: blur(10px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.cut-text {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.85;
+  color: var(--ink);
+  white-space: pre-wrap;
+  word-break: keep-all;
+  min-height: 3.2em;
+}
+
+.cut-text-in {
+  animation: cut-fade-in 0.4s ease;
+}
+
+@keyframes cut-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.cut-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.cut-progress {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--ink-soft);
+}
+
+.cut-next {
+  border: none;
+  border-radius: 999px;
+  padding: 9px 22px;
+  background: linear-gradient(135deg, var(--pink), var(--pink-deep));
+  color: #fff;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 5px 16px rgba(255, 111, 165, 0.42);
+  animation: cut-next-bounce 1.4s ease-in-out infinite;
+  transition: transform 0.15s ease;
+}
+
+.cut-next:hover {
+  transform: translateY(-2px);
+}
+
+/* 타이핑 중에는 "다음" 재촉 애니메이션을 멈춘다 */
+.cut-box.typing .cut-next {
+  animation: none;
+  opacity: 0.75;
+}
+
+@keyframes cut-next-bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(3px);
+  }
+}
+
+/* ── 반응형 ─────────────────────────────────────── */
+@media (max-height: 700px) {
+  .cut-stage {
+    padding-bottom: 74px;
+  }
+  .cut-box {
+    min-height: 112px;
+    padding: 20px 24px 14px;
+  }
+  .cut-text {
+    font-size: 16px;
+    min-height: 2.8em;
+  }
+}
+
+@media (max-width: 560px) {
+  .cut-stage {
+    padding: 0 12px 72px;
+  }
+  .cut-box {
+    min-height: 108px;
+    padding: 18px 18px 14px;
+    border-radius: 18px;
+  }
+  .cut-text {
+    font-size: 15px;
+    line-height: 1.75;
+    min-height: 3em;
+  }
+  .cut-skip {
+    right: 12px;
+    bottom: 14px;
+    padding: 7px 14px;
+    font-size: 11px;
+  }
+  .cut-next {
+    padding: 8px 18px;
+    font-size: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cut,
+  .cut-bg,
+  .cut-bg-placeholder {
+    transition: none;
+  }
+  .cut-next,
+  .cut-text-in {
+    animation: none;
+  }
+}

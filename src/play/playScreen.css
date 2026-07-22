@@ -1,0 +1,662 @@
+/* ═════════════════════════════════════════════════════════════
+   대화 화면 — 비주얼노벨 레이아웃 (VN)
+   ─────────────────────────────────────────────────────────────
+   구조: 배경(전체) → 캐릭터(중앙 하단) → HUD(좌상단 챕터 / 우상단 EP·게이지·타이머)
+         → 하단 대사창 → 입력 바
+   에셋이 없을 때도 배치가 보이도록 모든 슬롯에 플레이스홀더를 둔다.
+   ═════════════════════════════════════════════════════════════ */
+
+.vn {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+/* ── 배경 레이어 ────────────────────────────── */
+
+/* 에셋이 없을 때 보이는 그라데이션 (감정에 따라 톤이 살짝 바뀐다) */
+.vn-bg-placeholder {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(170deg, #cfe4ff 0%, #e6dcff 45%, #ffd9ea 100%);
+  transition: background 1.2s ease;
+}
+
+.vn.emotion-happy .vn-bg-placeholder {
+  background: linear-gradient(170deg, #ffe3f1 0%, #ffeaf6 45%, #fff3d9 100%);
+}
+.vn.emotion-worry .vn-bg-placeholder {
+  background: linear-gradient(170deg, #dfe6f5 0%, #efe6f0 45%, #ffe9d6 100%);
+}
+.vn.emotion-angry .vn-bg-placeholder {
+  background: linear-gradient(170deg, #d8dbe8 0%, #ecdcdc 45%, #ffdada 100%);
+}
+
+/* 실제 배경 이미지가 로드되면 여기에 깔린다 */
+.vn-bg-image {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+
+.vn.has-bg .vn-bg-image {
+  opacity: 1;
+}
+
+/* 하단 어둡게 — 대사창 위 텍스트 가독성 확보 */
+.vn-bg-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 70% at 50% 12%, transparent 40%, rgba(70, 50, 90, 0.18) 100%),
+    linear-gradient(to bottom, transparent 45%, rgba(60, 45, 80, 0.28) 100%);
+}
+
+/* ── 캐릭터 레이어 ──────────────────────────── */
+.vn-char-layer {
+  position: absolute;
+  left: 50%;
+  bottom: 28vh;
+  transform: translateX(-50%);
+  width: min(46vh, 420px);
+  height: 62vh;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  pointer-events: none;
+}
+
+/* 캐릭터 뒤 은은한 빛 */
+.vn-char-glow {
+  position: absolute;
+  bottom: 4%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  height: 55%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255, 255, 255, 0.65), transparent 72%);
+  filter: blur(6px);
+}
+
+/* 감정별 이미지 2장을 겹쳐두고 크로스페이드 */
+.vn-char {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  opacity: 0;
+  transition: opacity 0.55s ease;
+}
+
+.vn-char.show {
+  opacity: 1;
+}
+
+/* 에셋이 없을 때의 실루엣 — 감정에 따라 색이 바뀌어 전환이 눈에 보인다 */
+.vn-char-placeholder {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  width: 100%;
+  height: 100%;
+  transition: opacity 0.4s ease;
+}
+
+/* 실제 캐릭터 이미지가 로드되면 플레이스홀더는 숨긴다 */
+.vn.has-char .vn-char-placeholder {
+  opacity: 0;
+}
+
+.vn-char-face {
+  font-size: clamp(48px, 9vh, 86px);
+  line-height: 1;
+  margin-bottom: -2%;
+  filter: drop-shadow(0 4px 10px rgba(120, 90, 140, 0.28));
+  transition: transform 0.4s ease;
+  z-index: 1;
+}
+
+/* 실루엣 몸통 */
+.vn-char-body {
+  width: 72%;
+  height: 58%;
+  border-radius: 46% 46% 12% 12% / 30% 30% 8% 8%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(226, 214, 240, 0.85));
+  box-shadow: 0 -6px 26px rgba(140, 110, 170, 0.22);
+  transition: background 0.6s ease;
+}
+
+.vn-char-placeholder[data-emotion='happy'] .vn-char-body {
+  background: linear-gradient(180deg, rgba(255, 246, 250, 0.95), rgba(255, 206, 228, 0.88));
+}
+.vn-char-placeholder[data-emotion='worry'] .vn-char-body {
+  background: linear-gradient(180deg, rgba(252, 250, 244, 0.95), rgba(248, 222, 194, 0.88));
+}
+.vn-char-placeholder[data-emotion='angry'] .vn-char-body {
+  background: linear-gradient(180deg, rgba(255, 246, 246, 0.95), rgba(255, 199, 199, 0.9));
+}
+
+/* ── 좌상단 챕터 태그 ───────────────────────── */
+.vn-chapter {
+  position: absolute;
+  top: 18px;
+  left: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: min(46vw, 420px);
+  padding: 9px 18px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 4px 16px rgba(120, 90, 140, 0.18);
+  backdrop-filter: blur(8px);
+  font-size: 14px;
+  font-weight: 800;
+  z-index: 3;
+}
+
+.chapter-heart {
+  animation: heart-pulse 1.6s ease-in-out infinite;
+}
+
+.chapter-num {
+  font-weight: 900;
+  color: var(--pink-deep);
+  letter-spacing: 0.06em;
+}
+
+.chapter-sep {
+  color: var(--pink-line);
+}
+
+.chapter-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── 우상단 HUD ─────────────────────────────── */
+.vn-hud {
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  z-index: 3;
+}
+
+/* EP 진행 노드 (육각형) */
+.ep-nodes {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ep-node {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 46px;
+  clip-path: polygon(25% 4%, 75% 4%, 100% 50%, 75% 96%, 25% 96%, 0% 50%);
+  background: rgba(255, 255, 255, 0.68);
+  color: var(--ink-soft);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.ep-node.past {
+  background: rgba(255, 255, 255, 0.9);
+  color: var(--pink-deep);
+}
+
+.ep-node.current {
+  background: linear-gradient(140deg, var(--pink), var(--pink-deep));
+  color: #fff;
+  transform: scale(1.14);
+  box-shadow: 0 4px 14px rgba(255, 111, 165, 0.45);
+}
+
+/* 게이지 (기존 .gauge/.gauge-track/.gauge-fill/.gauge-goal 스타일 재사용) */
+.vn-hud .gauge {
+  background: rgba(255, 255, 255, 0.82);
+  border-color: rgba(255, 227, 240, 0.9);
+  backdrop-filter: blur(8px);
+}
+
+.vn-hud .timer {
+  background: rgba(255, 255, 255, 0.82);
+  border-color: rgba(223, 241, 255, 0.9);
+  backdrop-filter: blur(8px);
+}
+
+.vn-notice {
+  position: absolute;
+  top: 74px;
+  left: 20px;
+  z-index: 3;
+  max-width: min(52vw, 520px);
+}
+
+/* ── 하단 영역 (대사창 + 입력) ───────────────── */
+.vn-bottom {
+  position: relative;
+  z-index: 4;
+  width: min(1180px, 100%);
+  margin: 0 auto;
+  padding: 0 20px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* 대사창 */
+.vn-dialogue {
+  position: relative;
+  min-height: 132px;
+  padding: 26px 30px 24px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 10px 34px rgba(110, 80, 140, 0.26);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+}
+
+/* 캐릭터 이름 pill — 대사창 위쪽에 걸치게 */
+.vn-name-pill {
+  position: absolute;
+  top: -17px;
+  left: 26px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 20px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--pink), var(--pink-deep));
+  color: #fff;
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  box-shadow: 0 4px 14px rgba(255, 111, 165, 0.42);
+}
+
+.char-emotion-label {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  opacity: 0.85;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.vn-dialogue .bubble-text {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.75;
+  min-height: 3.5em;
+  white-space: pre-wrap;
+  word-break: keep-all;
+}
+
+.vn-dialogue .bubble-text.thinking::after {
+  content: '…';
+  animation: blink 1s steps(1) infinite;
+}
+
+/* 타이핑이 끝났을 때만 ▼ 표시 */
+.vn-dialogue .bubble-next {
+  position: absolute;
+  right: 22px;
+  bottom: 14px;
+  font-size: 13px;
+  color: var(--pink-deep);
+  animation: bubble-bounce 1.2s ease-in-out infinite;
+}
+
+.vn-dialogue.typing .bubble-next {
+  visibility: hidden;
+}
+
+@keyframes bubble-bounce {
+  0%, 100% {
+    transform: translateY(0);
+    opacity: 0.55;
+  }
+  50% {
+    transform: translateY(4px);
+    opacity: 1;
+  }
+}
+
+/* ── 입력 바 ────────────────────────────────── */
+.vn-input {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.vn-input .chat-input {
+  flex: 1;
+  min-width: 0;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 999px;
+  padding: 13px 22px;
+  font-size: 15px;
+  font-family: inherit;
+  color: var(--ink);
+  outline: none;
+  box-shadow: 0 4px 16px rgba(110, 80, 140, 0.16);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.vn-input .chat-input::placeholder {
+  color: #b3aec2;
+}
+
+.vn-input .chat-input:focus {
+  border-color: var(--pink);
+  box-shadow: 0 4px 20px rgba(255, 143, 184, 0.34);
+}
+
+.vn-input .chat-input:disabled {
+  opacity: 0.6;
+}
+
+/* 리본 느낌의 둥근 전송 버튼 */
+.vn-input .send-btn {
+  position: relative;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 999px;
+  padding: 13px 30px;
+  background: linear-gradient(135deg, var(--pink), var(--pink-deep));
+  color: #fff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(255, 111, 165, 0.45);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.vn-input .send-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 9px 24px rgba(255, 111, 165, 0.55);
+}
+
+.vn-input .send-btn:disabled {
+  opacity: 0.62;
+  cursor: default;
+}
+
+.vn-input .send-btn .spinner {
+  display: none;
+  width: 15px;
+  height: 15px;
+  border: 3px solid rgba(255, 255, 255, 0.42);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.vn-input .send-btn.loading .send-label {
+  display: none;
+}
+
+.vn-input .send-btn.loading .spinner {
+  display: inline-block;
+}
+
+.vn-input-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #6f6580;
+}
+
+.vn-input-meta .msg-count {
+  background: rgba(255, 255, 255, 0.72);
+  border-radius: 999px;
+  padding: 3px 12px;
+}
+
+.vn-input-meta .end-btn {
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.72);
+  border-radius: 999px;
+  padding: 5px 16px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  color: #6f6580;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+
+.vn-input-meta .end-btn:hover:not(:disabled) {
+  background: #fff;
+  color: var(--pink-deep);
+}
+
+.vn-input-meta .end-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* ── 에러 토스트 ────────────────────────────── */
+.vn .error-toast {
+  position: absolute;
+  left: 50%;
+  bottom: 210px;
+  transform: translateX(-50%) translateY(8px);
+  z-index: 6;
+  max-width: min(90vw, 560px);
+  padding: 11px 20px;
+  border-radius: 999px;
+  background: rgba(255, 244, 244, 0.97);
+  border: 1px solid #ffc9c9;
+  color: #c0392b;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.vn .error-toast.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ═════════════════════════════════════════════
+   반응형 — 데스크톱 가로형 우선, 모바일은 깨지지만 않게
+   ═════════════════════════════════════════════ */
+
+/* 세로가 짧은 화면: 캐릭터를 줄여 대사창을 확보 */
+@media (max-height: 700px) {
+  .vn-char-layer {
+    bottom: 26vh;
+    height: 52vh;
+    width: min(38vh, 320px);
+  }
+
+  .vn-dialogue {
+    min-height: 112px;
+    padding: 22px 24px 20px;
+  }
+
+  .vn-dialogue .bubble-text {
+    font-size: 15px;
+    min-height: 3em;
+  }
+}
+
+@media (max-width: 860px) {
+  .vn-chapter {
+    top: 12px;
+    left: 12px;
+    max-width: 58vw;
+    font-size: 12px;
+    padding: 7px 14px;
+  }
+
+  .vn-hud {
+    top: 10px;
+    right: 12px;
+    gap: 6px;
+  }
+
+  .ep-node {
+    width: 40px;
+    height: 36px;
+    font-size: 8px;
+  }
+
+  .vn-hud .gauge-track {
+    width: 120px;
+  }
+
+  .vn-notice {
+    top: 60px;
+    left: 12px;
+    max-width: 76vw;
+  }
+}
+
+/* 모바일: HUD를 2줄로 분리(챕터 / EP·게이지·타이머) — 좁은 폭에서 겹치지 않게 */
+@media (max-width: 560px) {
+  .vn-chapter {
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    max-width: none;
+    font-size: 12px;
+    padding: 7px 14px;
+  }
+
+  .vn-hud {
+    top: 52px;
+    left: 10px;
+    right: 10px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  /* 좁은 폭에서는 EP 육각 노드를 접는다 — 한 줄에 게이지·타이머까지 넣으면 넘친다.
+     현재 화수는 좌상단 챕터 pill의 숫자(예: "02")가 대신 알려준다. */
+  .ep-nodes {
+    display: none;
+  }
+
+  .vn-hud .gauge {
+    padding: 6px 11px;
+    gap: 6px;
+  }
+
+  .vn-hud .gauge-track {
+    width: 96px;
+    height: 13px;
+  }
+
+  .vn-hud .gauge-num {
+    font-size: 12px;
+  }
+
+  .vn-hud .timer {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  .vn-notice {
+    top: 96px;
+  }
+
+  .vn-char-layer {
+    bottom: 34vh;
+    height: 40vh;
+    width: min(28vh, 200px);
+  }
+
+  .vn-bottom {
+    padding: 0 12px 12px;
+    gap: 8px;
+  }
+
+  .vn-dialogue {
+    min-height: 100px;
+    padding: 20px 18px 18px;
+    border-radius: 20px;
+  }
+
+  .vn-dialogue .bubble-text {
+    font-size: 14px;
+    line-height: 1.65;
+    min-height: 3em;
+  }
+
+  .vn-name-pill {
+    left: 16px;
+    font-size: 12px;
+    padding: 6px 15px;
+  }
+
+  .vn-input .chat-input {
+    padding: 11px 16px;
+    font-size: 14px;
+  }
+
+  .vn-input .send-btn {
+    padding: 11px 18px;
+    font-size: 13px;
+  }
+
+  .vn .error-toast {
+    bottom: 190px;
+    font-size: 12px;
+  }
+}
+
+/* 모션 최소화 설정 존중 */
+@media (prefers-reduced-motion: reduce) {
+  .vn-char,
+  .vn-bg-image,
+  .vn-bg-placeholder,
+  .vn-char-body {
+    transition: none;
+  }
+
+  .chapter-heart,
+  .vn-dialogue .bubble-next {
+    animation: none;
+  }
+}

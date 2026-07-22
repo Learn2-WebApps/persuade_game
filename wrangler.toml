@@ -1,0 +1,22 @@
+name = "persuade-game"
+
+# 고정 필수: 값을 비워두면 wrangler가 "오늘 날짜"를 쓰는데,
+# 설치된 workerd가 아직 지원하지 않는 날짜면 로컬 개발 서버가 아예 뜨지 않는다.
+# wrangler를 올린 뒤에만 이 날짜를 올릴 것.
+compatibility_date = "2026-07-15"
+
+pages_build_output_dir = "public"
+
+# ── 환경 구분 (ENVIRONMENT) ──────────────────────────────────
+# 관리자 인증에서만 쓰인다. ADMIN_ID/ADMIN_PASSWORD가 설정돼 있지 않을 때,
+# ENVIRONMENT === "development" 이면 개발용 기본값(learn2/0067)으로 폴백하고,
+# 그 외(값이 없는 경우 포함)에는 500으로 막는다. → functions/_lib/adminAuth.js
+#
+# 로컬 개발용 값은 .dev.vars 에 둔다 (ENVIRONMENT=development).
+# ⚠️ 이 파일 최상단에 [vars]로 development를 두면 배포 환경까지 개발 모드로 내려가
+#    기본 자격증명이 열릴 수 있다. 반드시 아래처럼 환경별로만 지정할 것.
+[env.production.vars]
+ENVIRONMENT = "production"
+
+[env.preview.vars]
+ENVIRONMENT = "preview"

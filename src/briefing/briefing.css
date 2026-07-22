@@ -1,0 +1,335 @@
+/* ═════════════════════════════════════════════════════════════
+   스테이지 브리핑 화면 — 대화 시작 전 상황 안내
+   왼쪽 캐릭터 / 오른쪽 상황·목표·조언 카드 / 하단 START
+   ═════════════════════════════════════════════════════════════ */
+
+.brief {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── 배경 ───────────────────────────────────────── */
+.brief-bg-placeholder {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(165deg, #d9e6ff 0%, #e9ddff 45%, #ffdcec 100%);
+}
+
+.brief-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  transition: opacity 0.7s ease;
+}
+
+.brief.has-bg .brief-bg {
+  opacity: 1;
+}
+
+/* 배경 위에 흰 막 — 카드 가독성 확보 */
+.brief-scrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.72));
+}
+
+/* ── 레이아웃 ───────────────────────────────────── */
+.brief-inner {
+  position: relative;
+  z-index: 2;
+  width: min(1120px, 100%);
+  padding: 28px 22px 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.brief-lead {
+  text-align: center;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: #7b6a86;
+}
+
+.brief-body {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 22px;
+  align-items: stretch;
+}
+
+/* ── 왼쪽: 캐릭터 ───────────────────────────────── */
+.brief-char {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.brief-char-frame {
+  position: relative;
+  width: 100%;
+  flex: 1;
+  min-height: 260px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.brief-char-img {
+  max-width: 100%;
+  max-height: 46vh;
+  object-fit: contain;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  filter: drop-shadow(0 10px 24px rgba(120, 90, 140, 0.28));
+}
+
+.brief.has-char .brief-char-img {
+  opacity: 1;
+}
+
+/* 캐릭터 에셋이 없을 때의 자리표시 */
+.brief-char-placeholder {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 170px;
+  height: 210px;
+  border-radius: 46% 46% 14% 14% / 32% 32% 10% 10%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(226, 214, 240, 0.9));
+  box-shadow: 0 8px 24px rgba(140, 110, 170, 0.24);
+  display: grid;
+  place-items: center;
+  font-size: 52px;
+  transition: opacity 0.4s ease;
+}
+
+.brief.has-char .brief-char-placeholder {
+  opacity: 0;
+}
+
+.brief-char-name {
+  font-size: 19px;
+  font-weight: 900;
+  color: var(--ink);
+}
+
+.brief-char-role {
+  padding: 3px 13px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2px 8px rgba(120, 90, 140, 0.16);
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--ink-soft);
+}
+
+/* ── 오른쪽: 브리핑 카드 ────────────────────────── */
+.brief-card {
+  background: rgba(255, 255, 255, 0.94);
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  border-radius: 24px;
+  box-shadow: 0 12px 34px rgba(110, 80, 140, 0.22);
+  backdrop-filter: blur(10px);
+  padding: 24px 28px 26px;
+}
+
+.brief-ep {
+  display: inline-block;
+  padding: 4px 13px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--pink), var(--pink-deep));
+  color: #fff;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+}
+
+.brief-title {
+  margin: 10px 0 18px;
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1.35;
+  word-break: keep-all;
+}
+
+.brief-block + .brief-block {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px dashed rgba(120, 90, 140, 0.22);
+}
+
+.brief-block-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 6px;
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--pink-deep);
+  letter-spacing: 0.02em;
+}
+
+.brief-block-text {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--ink);
+  word-break: keep-all;
+}
+
+/* 조언 블록만 살짝 강조 */
+.brief-block-tip {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border-top: none;
+  border-radius: 16px;
+  background: linear-gradient(160deg, #fff7fb, #f3f8ff);
+  border: 1px solid #f2e2ef;
+}
+
+.brief-block-tip .brief-block-head {
+  color: #7c3aed;
+}
+
+/* ── 하단 버튼 ──────────────────────────────────── */
+.brief-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  position: relative;
+}
+
+.brief-back {
+  position: absolute;
+  left: 0;
+  border: 1px solid rgba(120, 90, 140, 0.22);
+  background: rgba(255, 255, 255, 0.86);
+  border-radius: 999px;
+  padding: 9px 18px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: color 0.18s ease, border-color 0.18s ease;
+}
+
+.brief-back:hover {
+  color: var(--pink-deep);
+  border-color: var(--pink-line);
+}
+
+.brief-start {
+  border: none;
+  border-radius: 999px;
+  padding: 15px 58px;
+  background: linear-gradient(135deg, var(--pink), var(--pink-deep));
+  color: #fff;
+  font-family: inherit;
+  font-size: 17px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  box-shadow: 0 8px 22px rgba(255, 111, 165, 0.48);
+  transition: transform 0.16s ease, box-shadow 0.16s ease;
+  animation: brief-start-pulse 2s ease-in-out infinite;
+}
+
+.brief-start:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(255, 111, 165, 0.58);
+}
+
+@keyframes brief-start-pulse {
+  0%, 100% {
+    box-shadow: 0 8px 22px rgba(255, 111, 165, 0.48);
+  }
+  50% {
+    box-shadow: 0 8px 30px rgba(255, 111, 165, 0.72);
+  }
+}
+
+/* ── 반응형 ─────────────────────────────────────── */
+@media (max-width: 860px) {
+  .brief-body {
+    grid-template-columns: 200px 1fr;
+    gap: 16px;
+  }
+  .brief-title {
+    font-size: 21px;
+  }
+  .brief-card {
+    padding: 20px 20px 22px;
+  }
+}
+
+@media (max-width: 620px) {
+  .brief {
+    align-items: flex-start;
+  }
+  .brief-inner {
+    padding: 18px 14px 24px;
+    gap: 12px;
+  }
+  /* 좁은 화면에서는 캐릭터를 위로 올리고 가로로 눕힌다 */
+  .brief-body {
+    grid-template-columns: 1fr;
+  }
+  .brief-char {
+    flex-direction: row;
+    justify-content: center;
+    gap: 12px;
+  }
+  .brief-char-frame {
+    width: 96px;
+    min-height: 108px;
+    flex: none;
+  }
+  .brief-char-img {
+    max-height: 108px;
+  }
+  .brief-char-placeholder {
+    width: 84px;
+    height: 100px;
+    font-size: 32px;
+  }
+  .brief-block-text {
+    font-size: 14px;
+    line-height: 1.72;
+  }
+  .brief-actions {
+    flex-direction: column-reverse;
+    gap: 10px;
+  }
+  .brief-back {
+    position: static;
+  }
+  .brief-start {
+    width: 100%;
+    padding: 14px 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brief-start {
+    animation: none;
+  }
+  .brief-bg,
+  .brief-char-img,
+  .brief-char-placeholder {
+    transition: none;
+  }
+}
