@@ -2,14 +2,23 @@
  * cutsceneData.js — 서점 액자 스토리 컷신 대본
  *
  * 장면(scene) 객체:
- *   background : 배경 이미지 경로 (없으면 이전 장면 배경 유지)
+ *   background : 배경 이미지 경로. **생략하면 이전 장면의 배경을 그대로 유지**한다.
+ *   character  : 배경 위에 얹을 인물 이미지(투명 PNG) 경로.
+ *                **생략/null이면 인물이 사라진다** (배경과 달리 유지되지 않는다).
  *   lines      : 한 줄씩 순차 타이핑되는 대사/내레이션 배열
  *   bgm        : (예약) 지금은 비워둠
  *
  * 대사 안의 토큰은 josa.js의 formatLine이 치환한다.
  *   {학습자이름} → 이름,  {은/는} {이/가} → 앞 글자 받침에 맞춘 조사
+ *
+ * 이미지 파일이 없어도 컷신은 정상 진행된다 —
+ * 배경은 장면별 그라데이션으로, 인물은 "표시 안 함"으로 대체된다.
  */
 
+/**
+ * 배경 이미지 — 화면 전체를 덮는다 (cover).
+ * 사진형 이미지라 JPEG를 쓴다 (같은 화질에 PNG의 1/10 용량).
+ */
 export const CUTSCENE_BG = {
   street: '/assets/cutscene/street.jpg',
   alley: '/assets/cutscene/alley.jpg',
@@ -17,7 +26,15 @@ export const CUTSCENE_BG = {
   bookCover: '/assets/cutscene/book_cover.jpg',
   bookOpen: '/assets/cutscene/book_open.jpg',
   bookstoreNight: '/assets/cutscene/bookstore_night.jpg',
-  owner: '/assets/cutscene/owner.jpg',
+};
+
+/**
+ * 인물 이미지 — 배경 위에 얹는 레이어.
+ * 배경이 비쳐야 하므로 **반드시 투명 PNG**를 쓴다 (JPEG는 투명도가 없다).
+ * 노주인은 표정 분기 없이 owner.png 하나로 통일한다.
+ */
+export const CUTSCENE_CHAR = {
+  owner: '/assets/cutscene/owner.png',
 };
 
 /**
@@ -44,7 +61,9 @@ export const OPENING_SCENES = [
     ],
   },
   {
+    // 노주인이 처음 말을 거는 장면 — 서점 배경 위에 인물을 얹는다
     background: CUTSCENE_BG.bookstore,
+    character: CUTSCENE_CHAR.owner,
     bgm: null,
     lines: [
       '홀린 듯 문을 밀고 들어서자, 노주인이 고개를 들어 나를 가만히 바라보았다.',
@@ -54,7 +73,9 @@ export const OPENING_SCENES = [
     ],
   },
   {
+    // 책 표지 클로즈업 — 인물은 화면에서 빠진다
     background: CUTSCENE_BG.bookCover,
+    character: null,
     bgm: null,
     lines: ['그가 건넨 낡은 책의 표지에는, 오래된 금박으로 이렇게 적혀 있었다.', '【 설득의 정석 】'],
   },
@@ -84,7 +105,9 @@ export const OUTRO_SCENES = [
     ],
   },
   {
-    background: CUTSCENE_BG.owner,
+    // 노주인 등장 — 밤 서점 배경을 유지한 채 인물만 얹는다
+    background: CUTSCENE_BG.bookstoreNight,
+    character: CUTSCENE_CHAR.owner,
     bgm: null,
     lines: [
       '노주인이 잔잔한 미소를 머금고 물었다.',
@@ -92,7 +115,9 @@ export const OUTRO_SCENES = [
     ],
   },
   {
+    // 여운 — 인물을 빼고 책 펼침 연출로 전환
     background: CUTSCENE_BG.bookOpen,
+    character: null,
     bgm: null,
     lines: [
       '나는 대답 대신, 손에 남은 책의 온기를 가만히 느꼈다.',
@@ -100,7 +125,9 @@ export const OUTRO_SCENES = [
     ],
   },
   {
-    background: CUTSCENE_BG.owner,
+    // 마지막 흥정 — 다시 밤 서점으로 돌아와 노주인을 세운다
+    background: CUTSCENE_BG.bookstoreNight,
+    character: CUTSCENE_CHAR.owner,
     bgm: null,
     lines: [
       '노주인이 장난스레 덧붙였다.',

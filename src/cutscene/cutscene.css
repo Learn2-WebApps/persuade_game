@@ -65,13 +65,6 @@
     radial-gradient(46% 34% at 74% 32%, rgba(255, 176, 120, 0.42), transparent 72%),
     linear-gradient(170deg, #3a2c3d 0%, #6a4550 55%, #a8695a 100%);
 }
-/* 노주인 클로즈업 */
-.cut-bg-placeholder[data-scene='owner'] {
-  background:
-    radial-gradient(40% 34% at 50% 40%, rgba(255, 226, 180, 0.4), transparent 70%),
-    linear-gradient(170deg, #33261f 0%, #55402f 55%, #6f5540 100%);
-}
-
 /* 실제 이미지 두 겹 — 크로스페이드 */
 .cut-bg {
   position: absolute;
@@ -95,6 +88,36 @@
   background:
     radial-gradient(120% 76% at 50% 20%, transparent 42%, rgba(10, 8, 20, 0.42) 100%),
     linear-gradient(to bottom, transparent 42%, rgba(10, 8, 20, 0.66) 100%);
+}
+
+/* ── 인물 레이어 ────────────────────────────────── */
+/* 배경(z-index 없음) 위, 대사 박스(z-index 3) 아래에 놓인다.
+   투명 PNG를 화면 아래쪽 중앙에 세우는 비주얼노벨식 배치 —
+   contain + bottom 정렬이라 인물이 잘리거나 늘어나지 않는다. */
+.cut-char {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: min(560px, 74vw);
+  /* 대사 박스(하단 약 200px)를 피해 인물이 가려지지 않게 한다 */
+  height: min(76vh, 100% - 190px);
+  background-repeat: no-repeat;
+  background-position: bottom center;
+  background-size: contain;
+  opacity: 0;
+  transition: opacity 0.55s ease, transform 0.55s ease;
+  pointer-events: none;
+}
+
+.cut-char.show {
+  opacity: 1;
+}
+
+/* 등장할 때 살짝 떠오르는 느낌 */
+.cut-char:not(.show) {
+  transform: translateX(-50%) translateY(10px);
 }
 
 /* ── 건너뛰기 ───────────────────────────────────── */
@@ -237,6 +260,10 @@
 }
 
 @media (max-width: 560px) {
+  .cut-char {
+    width: 86vw;
+    height: min(58vh, 100% - 200px);
+  }
   .cut-stage {
     padding: 0 12px 72px;
   }
@@ -265,7 +292,8 @@
 @media (prefers-reduced-motion: reduce) {
   .cut,
   .cut-bg,
-  .cut-bg-placeholder {
+  .cut-bg-placeholder,
+  .cut-char {
     transition: none;
   }
   .cut-next,

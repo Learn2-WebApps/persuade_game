@@ -1,14 +1,19 @@
 /**
  * cutsceneScreen.js — 컷신 플레이어 (오프닝·아웃트로 공용)
  *
- * 하나의 컷신 = 장면(scene) 배열. 장면 = { background, lines[], bgm }
+ * 하나의 컷신 = 장면(scene) 배열. 장면 = { background, character, lines[], bgm }
+ *
+ * 화면은 세 겹이다: 배경(cover) → 인물(투명 PNG) → 대사 박스.
+ *   background : 생략하면 이전 장면 배경을 유지
+ *   character  : 생략하면 인물이 사라짐 (배경과 반대 규칙)
  *
  * 조작:
  *   화면 클릭 / [다음] → 다음 줄 (타이핑 중이면 그 줄을 즉시 완성)
  *   장면의 마지막 줄까지 끝나면 → 다음 장면 (배경 크로스페이드)
  *   [건너뛰기] → 컷신 전체 스킵
  *
- * 배경 이미지가 없으면 장면별 그라데이션 플레이스홀더를 쓴다 (깨진 이미지 방지).
+ * ⚠️ 에셋이 없어도 컷신은 끝까지 재생된다 — 이미지 로드에 실패하면
+ *    배경은 장면별 그라데이션으로, 인물은 표시 생략으로 대체한다 (깨진 이미지 아이콘 없음).
  */
 
 import './cutscene.css';
@@ -28,7 +33,7 @@ function bgKey(path) {
 
 /**
  * @param {object}   opts
- * @param {Array}    opts.scenes   - [{ background, lines[], bgm }]
+ * @param {Array}    opts.scenes   - [{ background, character, lines[], bgm }]
  * @param {object}   [opts.vars]   - 대사 토큰 치환값 { name, level, title, comment … }
  * @param {Function} opts.onDone   - 컷신 종료(끝까지 재생 또는 스킵) 시 호출
  */
@@ -50,6 +55,10 @@ export function initCutsceneScreen({ scenes, vars = {}, onDone }) {
     <div class="cut-bg cut-bg-b" aria-hidden="true"></div>
     <div class="cut-vignette" aria-hidden="true"></div>
 
+    <!-- ▼ 인물 레이어: 배경 위에 투명 PNG를 얹는다 (배경을 덮지 않는다).
+         이미지가 없으면 그냥 표시되지 않는다 — 배경·대사는 그대로 진행. -->
+    <div class="cut-char" aria-hidden="true"></div>
+
     <button class="cut-skip" type="button">건너뛰기 ▶▶</button>
 
     <div class="cut-stage">
@@ -68,6 +77,7 @@ export function initCutsceneScreen({ scenes, vars = {}, onDone }) {
     placeholder: app.querySelector('.cut-bg-placeholder'),
     bgA: app.querySelector('.cut-bg-a'),
     bgB: app.querySelector('.cut-bg-b'),
+    char: app.querySelector('.cut-char'),
     stage: app.querySelector('.cut-stage'),
     box: app.querySelector('.cut-box'),
     text: app.querySelector('.cut-text'),
@@ -83,6 +93,7 @@ export function initCutsceneScreen({ scenes, vars = {}, onDone }) {
   let activeBg = 'a';
   let finished = false;
   let currentBackground = null;
+  let currentCharacter = null;
 
   // ── 배경 전환 ────────────────────────────────────────────
   function setBackground(path) {
@@ -108,6 +119,38 @@ export function initCutsceneScreen({ scenes, vars = {}, onDone }) {
       el.bgA.classList.remove('show');
       el.bgB.classList.remove('show');
       activeBg = 'a';
+    };
+    probe.src = path;
+  }
+
+  // ── 인물 레이어 ──────────────────────────────────────────
+  /**
+   * 배경 위에 얹는 인물 이미지를 바꾼다.
+   * 배경과 달리 "생략하면 유지"가 아니라 **생략하면 사라진다**
+   * (인물이 계속 서 있으면 장면이 바뀐 걸 못 알아채기 때문).
+   */
+  function setCharacter(path) {
+    if (path === currentCharacter) return;
+    currentCharacter = path || null;
+
+    // 인물 없는 장면 — 부드럽게 사라지게 한다
+    if (!path) {
+      el.char.classList.remove('show');
+      return;
+    }
+
+    const probe = new Image();
+    probe.onload = () => {
+      // 로드 도중 장면이 또 바뀌었으면 늦게 온 응답은 버린다
+      if (currentCharacter !== path) return;
+      el.char.style.backgroundImage = `url("${path}")`;
+      el.char.classList.add('show');
+    };
+    probe.onerror = () => {
+      // 에셋 미준비 — 인물만 숨기고 배경·대사는 그대로 진행한다
+      console.info(`[cutscene] 인물 에셋 없음(표시 생략): ${path}`);
+      if (currentCharacter !== path) return;
+      el.char.classList.remove('show');
     };
     probe.src = path;
   }
@@ -150,6 +193,7 @@ export function initCutsceneScreen({ scenes, vars = {}, onDone }) {
     lineIndex = 0;
     const scene = script[sceneIndex];
     setBackground(scene.background);
+    setCharacter(scene.character);
     updateProgress();
     typeLine(scene.lines[0] ?? '');
   }
