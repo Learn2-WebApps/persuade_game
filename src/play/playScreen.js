@@ -24,13 +24,16 @@ const SUCCESS_LINE = 85;
 const TYPING_SPEED_MS = 22; // 대사 타이핑 속도 (글자당)
 
 const EMOTION_META = {
+  very_happy: { emoji: '🥰', label: 'VERY HAPPY' },
   happy: { emoji: '😊', label: 'HAPPY' },
   normal: { emoji: '🙂', label: 'NORMAL' },
   worry: { emoji: '😟', label: 'WORRY' },
   angry: { emoji: '😠', label: 'ANGRY' },
 };
 
-const gaugeClass = (g) => (g >= 80 ? 'g-happy' : g >= 50 ? 'g-normal' : g >= 30 ? 'g-worry' : 'g-angry');
+// 게이지 색 구간은 감정 구간(score.js emotionFor)과 경계를 맞춘다.
+const gaugeClass = (g) =>
+  g >= 85 ? 'g-very-happy' : g >= 70 ? 'g-happy' : g >= 50 ? 'g-normal' : g >= 30 ? 'g-worry' : 'g-angry';
 const pad2 = (n) => String(n).padStart(2, '0');
 
 /**
@@ -138,7 +141,7 @@ export async function initPlayScreen({ roomCode, track, stageId, totalStages = 5
 
   /**
    * 감정이 바뀌면 캐릭터 이미지를 크로스페이드한다.
-   * 감정 구간 판정(happy/normal/worry/angry)은 서버 게이지 로직 그대로 쓰고, 여기선 표시만 한다.
+   * 감정 구간 판정(very_happy/happy/normal/worry/angry 5단계)은 서버 게이지 로직 그대로 쓰고, 여기선 표시만 한다.
    * 이미지가 없으면 플레이스홀더 실루엣을 감정 색으로 바꿔 전환이 보이게 한다.
    */
   let activeCharLayer = 0;

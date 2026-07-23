@@ -261,6 +261,9 @@ body::before {
   pointer-events: none;
 }
 
+.gauge-fill.g-very-happy {
+  background: linear-gradient(90deg, #ff6fa5, #ff4f93);
+}
 .gauge-fill.g-happy {
   background: linear-gradient(90deg, #ff8fb8, #ff6fa5);
 }

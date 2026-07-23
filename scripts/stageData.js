@@ -24,6 +24,7 @@
 
 /** 에셋 경로 헬퍼 — 시나리오가 assetMap을 직접 지정하지 않을 때만 쓴다. */
 const makeAssetMap = (trackDir, charDir) => ({
+  very_happy: `/assets/${trackDir}/${charDir}/very_happy.png`,
   happy: `/assets/${trackDir}/${charDir}/happy.png`,
   normal: `/assets/${trackDir}/${charDir}/normal.png`,
   worry: `/assets/${trackDir}/${charDir}/worry.png`,

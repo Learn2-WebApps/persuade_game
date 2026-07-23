@@ -11,14 +11,14 @@
  *
  * ── 캐릭터 ────────────────────────────────────────────
  *   public/assets/{track}/{characterKey}/{emotion}.png   투명 PNG 세로형
- *   emotion = happy | normal | worry | angry
+ *   emotion = very_happy | happy | normal | worry | angry  (5단계)
  *   예) public/assets/work/jimin/happy.png
  *   스테이지 데이터의 assetMap[emotion] 값이 우선한다 (stageData.js가 이미 이 규칙으로 넣어둠).
  *
  * 파일이 없으면 이미지 로드 실패를 감지해 플레이스홀더로 폴백한다 (깨진 이미지 아이콘 방지).
  */
 
-export const EMOTIONS = ['happy', 'normal', 'worry', 'angry'];
+export const EMOTIONS = ['very_happy', 'happy', 'normal', 'worry', 'angry'];
 
 /** 배경 기본 경로 */
 export const backgroundPath = (track, stageId) => `/assets/${track}/bg/${stageId}.jpg`;
