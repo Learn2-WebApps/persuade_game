@@ -55,3 +55,44 @@ function guessCharacterKey(stage) {
   const parts = sample.split('/').filter(Boolean);
   return parts.length >= 2 ? parts[parts.length - 2] : null;
 }
+
+// ─────────────────────────────────────────────────────────────
+// 프리로딩 — 대화 중 첫 표정 전환이 끊기지 않도록 미리 브라우저 캐시에 올린다.
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * 이미 요청한 URL 집합. 같은 이미지를 두 번 네트워크로 받지 않도록 막는다.
+ * (문자열만 담으므로 메모리 부담이 없다. Image 객체는 참조를 남기지 않아
+ *  스테이지를 벗어나면 GC 대상이 된다 — 이전 스테이지 이미지를 붙들지 않는다.)
+ */
+const _requested = new Set();
+
+/**
+ * 이미지 한 장을 백그라운드로 미리 로드한다.
+ * 로드 실패해도 조용히 무시한다 — 실제 표시는 각 화면의 fallback(placeholder/normal)이 담당하므로
+ * 프리로딩이 실패해도 화면 동작에는 아무 영향이 없다.
+ * @param {string|null} src
+ */
+export function preloadImage(src) {
+  if (!src || _requested.has(src)) return;
+  _requested.add(src);
+  const img = new Image();
+  img.decoding = 'async';
+  img.src = src; // onload/onerror 핸들러 없이 캐시만 데운다
+}
+
+/**
+ * 한 스테이지의 대화용 에셋(배경 + 캐릭터 5표정)을 미리 로드한다.
+ * 스테이지 진입 직전(브리핑 화면)에 호출하면, 학습자가 브리핑을 읽는 동안
+ * 이미지가 캐시에 올라가 첫 표정 전환이 즉시 이루어진다.
+ * @param {object} stage
+ * @param {string} track
+ * @param {string} [stageId] - 없으면 stage.id 사용
+ */
+export function preloadStageAssets(stage, track, stageId = stage?.id) {
+  if (!stage) return;
+  preloadImage(resolveBackground(stage, track, stageId));
+  for (const emotion of EMOTIONS) {
+    preloadImage(resolveCharacter(stage, track, emotion));
+  }
+}

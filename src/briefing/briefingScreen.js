@@ -13,7 +13,7 @@
  */
 
 import './briefing.css';
-import { resolveBackground, resolveCharacter } from '../play/assets.js';
+import { resolveBackground, resolveCharacter, preloadStageAssets } from '../play/assets.js';
 
 const escapeHtml = (s) =>
   String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -98,6 +98,12 @@ export function initBriefingScreen({ stage, track, onStart, onBack }) {
     startBtn: app.querySelector('.brief-start'),
     backBtn: app.querySelector('.brief-back'),
   };
+
+  // ── 프리로딩 ──────────────────────────────────────────────
+  // 학습자가 브리핑(상황·목표·조언)을 읽는 동안, 대화에서 쓸 배경 + 5표정을 미리 캐시에 올린다.
+  // 그러면 대화 시작 후 첫 표정 전환이 끊김 없이 즉시 이루어진다.
+  // (아래 배경/normal 로드와 URL이 겹치면 assets.js의 _requested 집합이 중복 요청을 막는다.)
+  preloadStageAssets(stage, track, stage.id);
 
   // 배경 — 없으면 플레이스홀더 유지
   {

@@ -17,7 +17,7 @@
 import './playScreen.css';
 import { isFirebaseConfigured, fetchRoom, fetchStage } from '../common/firebase.js';
 import { DEMO_SETTINGS, DEMO_STAGE1 } from './demoStage.js';
-import { resolveBackground, resolveCharacter } from './assets.js';
+import { resolveBackground, resolveCharacter, preloadStageAssets } from './assets.js';
 
 const GAUGE_START = 50;
 const SUCCESS_LINE = 85;
@@ -116,6 +116,11 @@ export async function initPlayScreen({ roomCode, track, stageId, totalStages = 5
     errorToast: app.querySelector('.error-toast'),
     overlay: app.querySelector('.result-overlay'),
   };
+
+  // ── 프리로딩(안전망): 보통은 브리핑 화면에서 이미 데워졌지만, 브리핑을 건너뛰었거나
+  //    빠르게 START한 경우를 대비해 여기서도 5표정 + 배경을 미리 로드한다.
+  //    (_requested 집합이 중복 요청을 막으므로 이중 호출이어도 네트워크 낭비가 없다.) ──
+  preloadStageAssets(state.stage, track, stageId);
 
   // ── 배경 이미지: 있으면 표시, 없으면 그라데이션 플레이스홀더 유지 ──
   {
