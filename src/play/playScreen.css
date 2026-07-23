@@ -66,41 +66,49 @@
 }
 
 /* ── 캐릭터 레이어 ──────────────────────────── */
+/* 비주얼노벨 표준 배치: 화면 높이에 맞춰 크게, 하단(bottom:0) 정렬.
+   하반신은 대사창(z-index:4) 뒤로 자연스럽게 가려진다(뷰포트가 아니라 대사창이 "자름").
+   ── 캐릭터 크기 조절: 아래 --char-height 값(85~100vh)만 바꾸면 된다 ── */
 .vn-char-layer {
+  --char-height: 92vh; /* ← 여기 값으로 캐릭터 크기 조절 (크게: 96~100vh, 작게: 85~88vh) */
   position: absolute;
   left: 50%;
-  bottom: 28vh;
+  bottom: 0;
   transform: translateX(-50%);
-  width: min(46vh, 420px);
-  height: 62vh;
+  width: min(var(--char-height), 92vw);
+  height: var(--char-height);
   display: flex;
   align-items: flex-end;
   justify-content: center;
   pointer-events: none;
 }
 
-/* 캐릭터 뒤 은은한 빛 */
+/* 캐릭터 뒤 은은한 빛 — 커진 레이어에 맞춰 바닥 쪽 부드러운 조명 정도로 (과한 헤이즈 방지) */
 .vn-char-glow {
   position: absolute;
-  bottom: 4%;
+  bottom: 2%;
   left: 50%;
   transform: translateX(-50%);
-  width: 90%;
-  height: 55%;
+  width: 62%;
+  height: 30%;
   border-radius: 50%;
-  background: radial-gradient(closest-side, rgba(255, 255, 255, 0.65), transparent 72%);
-  filter: blur(6px);
+  background: radial-gradient(closest-side, rgba(255, 255, 255, 0.5), transparent 72%);
+  filter: blur(8px);
 }
 
-/* 감정별 이미지 2장을 겹쳐두고 크로스페이드 */
+/* 감정별 이미지 2장을 겹쳐두고 크로스페이드.
+   height 기준으로 키우고(width:auto로 비율 유지) 하단 정렬 → 좌우 왜곡·잘림 없음. */
 .vn-char {
   position: absolute;
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
-  max-width: 100%;
+  height: 100%;
+  width: auto;
+  max-width: none; /* 가로 제한 때문에 작아지지 않게 */
   max-height: 100%;
   object-fit: contain;
+  object-position: bottom center;
   opacity: 0;
   transition: opacity 0.55s ease;
 }
@@ -509,10 +517,9 @@
 
 /* 세로가 짧은 화면: 캐릭터를 줄여 대사창을 확보 */
 @media (max-height: 700px) {
+  /* 낮은 화면 — 변수만 낮춰 하단 정렬은 유지 (base 규칙의 bottom:0/비율 그대로) */
   .vn-char-layer {
-    bottom: 26vh;
-    height: 52vh;
-    width: min(38vh, 320px);
+    --char-height: 86vh;
   }
 
   .vn-dialogue {
@@ -608,10 +615,9 @@
     top: 96px;
   }
 
+  /* 좁은 모바일(세로) — 캐릭터를 높이 기준으로 크게 유지, 하단 정렬. 좌우는 .vn overflow:hidden이 정리 */
   .vn-char-layer {
-    bottom: 34vh;
-    height: 40vh;
-    width: min(28vh, 200px);
+    --char-height: 82vh;
   }
 
   .vn-bottom {
