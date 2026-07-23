@@ -68,6 +68,29 @@ body::before {
   min-height: 100vh;
 }
 
+/* ── 공용 서점 배경 (학습자 진입 / 관리자 로그인 / 트랙 선택 공유) ─────
+   화면 방향으로 분기: 가로(PC/landscape)=main_wide, 세로(모바일/portrait)=main_tall.
+   .ui-bg 자체엔 배경색이 없어(transparent), 이미지 로드 실패 시 뒤의 body 그라데이션이
+   그대로 비쳐 안전하게 폴백된다. z-index:0 이라 fx·카드(z-index:1) 아래에 깔린다. */
+.ui-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: url("/assets/ui/main_wide.jpg") center / cover no-repeat;
+}
+@media (orientation: portrait) {
+  .ui-bg {
+    background-image: url("/assets/ui/main_tall.jpg");
+  }
+}
+/* 카드 가독성용 반투명 오버레이 — 배경 이미지 위, 카드 아래(.ui-bg 안쪽이라 z-index:0 유지) */
+.ui-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.25);
+}
+
 /* ── 떠다니는 하트/반짝이 레이어 ─────────────── */
 .fx {
   position: fixed;
@@ -132,8 +155,9 @@ body::before {
 .play > *:not(.fx),
 .map > *:not(.fx),
 /* 관리자 버튼은 뷰포트 고정이므로 제외한다 —
-   여기에 걸리면 position:relative가 fixed를 덮어써서 카드 옆에 붙어버린다 */
-.entry > *:not(.fx):not(.admin-link) {
+   여기에 걸리면 position:relative가 fixed를 덮어써서 카드 옆에 붙어버린다.
+   .ui-bg(서점 배경)도 제외해야 z-index:0으로 카드 아래에 깔린다. */
+.entry > *:not(.fx):not(.admin-link):not(.ui-bg) {
   position: relative;
   z-index: 1;
 }
@@ -858,6 +882,7 @@ body::before {
    ═════════════════════════════════════════════ */
 
 .entry {
+  position: relative; /* .ui-bg(absolute inset:0)의 기준 컨테이너 */
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -1031,8 +1056,10 @@ body::before {
   font-weight: 700;
   color: var(--ink-soft);
   text-decoration: none;
-  background: rgba(255, 255, 255, 0.82);
-  box-shadow: 0 2px 10px rgba(120, 90, 140, 0.16);
+  /* 서점 배경 위에서도 또렷하게 — 불투명도↑ + 하얀 테두리 + 그림자 강화 (반투명 pill 유지) */
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 3px 14px rgba(60, 45, 80, 0.28);
   backdrop-filter: blur(6px);
   transition: color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
   z-index: 5;

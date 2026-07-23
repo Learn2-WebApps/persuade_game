@@ -14,6 +14,8 @@ function showLogin() {
   const app = document.getElementById('admin-app');
   app.innerHTML = `
   <div class="entry">
+    <!-- 학습자 진입·트랙선택과 동일한 공용 서점 배경 (style.css의 .ui-bg, adminMain에서 style.css를 import함) -->
+    <div class="ui-bg" aria-hidden="true"></div>
     <div class="entry-card">
       <div class="entry-deco">🗝️</div>
       <h1 class="entry-title">관리자</h1>

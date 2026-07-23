@@ -11,6 +11,8 @@ export function initEntryScreen({ onEntered }) {
   const app = document.getElementById('app');
   app.innerHTML = `
   <div class="entry">
+    <!-- 공용 서점 배경 (가로/세로 분기) — 관리자·트랙선택 화면과 같은 .ui-bg를 공유한다 -->
+    <div class="ui-bg" aria-hidden="true"></div>
     <div class="fx" aria-hidden="true">
       <span>💗</span><span>✦</span><span>🩷</span><span>✧</span><span>💕</span><span>✦</span><span>💗</span><span>✧</span>
     </div>

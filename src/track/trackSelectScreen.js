@@ -43,6 +43,8 @@ export async function initTrackSelectScreen({ session, onSelectTrack, onShowRepo
 
   app.innerHTML = `
   <div class="entry track-select">
+    <!-- 로그인 화면과 같은 공용 서점 배경 — 화면 전환 시 배경이 유지되는 인상을 준다 -->
+    <div class="ui-bg" aria-hidden="true"></div>
     <div class="fx" aria-hidden="true">
       <span>💗</span><span>✦</span><span>🩷</span><span>✧</span><span>💕</span><span>✦</span>
     </div>
