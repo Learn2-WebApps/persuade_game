@@ -1589,6 +1589,94 @@ body::before {
   word-break: keep-all;
 }
 
+/* ── 4가지 설득 기준(4축) 평가 ─────────────────
+   강약은 막대 + 상/중/하 라벨로만(정밀 숫자 없음). 톤은 밝은 크림·앰버. */
+.axis-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.axis-row {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.axis-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.axis-name {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-on-light);
+}
+
+/* 학술 용어는 작게 병기(교육 목적) — 단독으로 튀지 않게 흐리게 */
+.axis-academic {
+  margin-left: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-dim-light);
+  letter-spacing: 0.03em;
+}
+
+.axis-level {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 900;
+  padding: 2px 12px;
+  border-radius: 999px;
+  letter-spacing: 0.04em;
+}
+.axis-level.lv-high {
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+}
+.axis-level.lv-mid {
+  color: var(--accent-strong);
+  background: rgba(200, 134, 60, 0.16);
+}
+.axis-level.lv-low {
+  color: #8a6a52;
+  background: rgba(120, 90, 60, 0.12);
+}
+
+.axis-bar {
+  position: relative;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(120, 90, 50, 0.12);
+  overflow: hidden;
+}
+
+.axis-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.6s ease;
+}
+.axis-bar-fill.lv-high {
+  background: linear-gradient(90deg, var(--accent), var(--accent-glow));
+}
+.axis-bar-fill.lv-mid {
+  background: linear-gradient(90deg, #d9a862, var(--accent));
+}
+.axis-bar-fill.lv-low {
+  background: linear-gradient(90deg, #c2a988, #b9946a);
+}
+
+.axis-comment {
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--text-dim-light);
+  word-break: keep-all;
+}
+
 .report-item {
   display: flex;
   flex-direction: column;

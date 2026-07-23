@@ -18,6 +18,40 @@ import { normalizeTrack, trackLabel } from '../common/tracks.js';
 const escapeHtml = (s) =>
   String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
+/** 상/중/하 → CSS 톤 클래스 */
+const levelClass = (level) => (level === '상' ? 'high' : level === '하' ? 'low' : 'mid');
+
+/**
+ * 4축(설득 기준) 평가 섹션.
+ * 축별 강약(막대 + 상/중/하)은 서버가 저장 점수로 계산해 넘겨준 값이고,
+ * 한 줄 코멘트는 Gemini가 쓴 문장이다. 학술 용어(Logos 등)는 서버 고정 병기라 작게만 노출한다.
+ * (옛 저장 리포트에는 axes가 없으므로 그 경우 섹션을 생략한다 — 하위호환)
+ */
+function renderAxes(axes) {
+  if (!Array.isArray(axes) || axes.length === 0) return '';
+  const rows = axes
+    .map((a) => {
+      const lv = levelClass(a.level);
+      const bar = Math.max(0, Math.min(100, Number(a.bar) || 0));
+      return `
+      <div class="axis-row">
+        <div class="axis-head">
+          <span class="axis-name">${escapeHtml(a.label)}<span class="axis-academic">${escapeHtml(a.academic || '')}</span></span>
+          <span class="axis-level lv-${lv}">${escapeHtml(a.level || '중')}</span>
+        </div>
+        <div class="axis-bar"><span class="axis-bar-fill lv-${lv}" style="width:${bar}%"></span></div>
+        ${a.comment ? `<p class="axis-comment">${escapeHtml(a.comment)}</p>` : ''}
+      </div>`;
+    })
+    .join('');
+
+  return `
+      <section class="report-card">
+        <h2 class="report-card-title">🧭 4가지 설득 기준</h2>
+        <div class="axis-list">${rows}</div>
+      </section>`;
+}
+
 export async function initReportScreen({ session, onBack }) {
   const app = document.getElementById('app');
   // 리포트는 트랙별로 따로 생성·저장된다 (선택한 트랙의 스테이지 기준)
@@ -128,6 +162,8 @@ export async function initReportScreen({ session, onBack }) {
         <h2 class="report-card-title">💬 총평</h2>
         <p class="report-text">${escapeHtml(r.summary)}</p>
       </section>
+
+      ${renderAxes(r.axes)}
 
       <section class="report-card">
         <h2 class="report-card-title">🔍 관찰된 설득 스타일</h2>

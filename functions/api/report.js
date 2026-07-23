@@ -29,6 +29,48 @@ const TRACK_LABELS = { work: '업무 설득 트랙', life: '일상 설득 트랙
 const stagesCollection = (track) => `stages_${track}`;
 const resultsCollection = (track) => `stageResults_${track}`;
 
+// ── 4축(설득 기준) 정의 — 화면 표시용 게임 용어 + 작게 병기할 학술 용어 ──
+// 학술 용어는 여기 고정 문자열로만 붙는다(Gemini가 임의로 뱉지 못하게). 표시 순서도 이 배열을 따른다.
+const AXIS_ORDER = ['logic', 'trust', 'emotion', 'timing'];
+const AXIS_META = {
+  logic: { label: '논리', academic: 'Logos' },
+  trust: { label: '신뢰', academic: 'Ethos' },
+  emotion: { label: '감정·공감', academic: 'Pathos' },
+  timing: { label: '타이밍', academic: 'Kairos' },
+};
+
+/** 축 평균(-5~+5) → 상/중/하 라벨. 정밀 숫자 대신 강약만 노출한다. */
+function axisLevel(avg) {
+  if (avg >= 1.2) return '상';
+  if (avg <= -0.2) return '하';
+  return '중';
+}
+
+/** 축 평균(-5~+5) → 막대 채움 비율(6~100%). 화면엔 숫자를 안 쓰고 막대 폭으로만 쓴다. */
+function axisBar(avg) {
+  return Math.max(6, Math.min(100, Math.round(((avg + 2.5) / 5) * 100)));
+}
+
+/**
+ * 저장된 모든 턴의 4축 점수를 트랙 단위로 집계한다(옵션 A).
+ * 반환: [{ key, label, academic, level, bar }] — comment는 이후 Gemini 결과와 합친다.
+ */
+function computeAxisStats(results) {
+  const sums = { logic: 0, trust: 0, emotion: 0, timing: 0 };
+  let turnCount = 0;
+  for (const r of results) {
+    for (const t of r.turns || []) {
+      turnCount += 1;
+      const a = t.axisScores || {};
+      for (const k of AXIS_ORDER) sums[k] += Number(a[k]) || 0;
+    }
+  }
+  return AXIS_ORDER.map((k) => {
+    const avg = turnCount ? sums[k] / turnCount : 0;
+    return { key: k, label: AXIS_META[k].label, academic: AXIS_META[k].academic, level: axisLevel(avg), bar: axisBar(avg) };
+  });
+}
+
 // ─────────────────────────────────────────────────────────────
 // 프롬프트
 // ─────────────────────────────────────────────────────────────
@@ -73,6 +115,12 @@ ${stageBlocks.join('\n\n')}
 5. 톤: 따뜻하고 격려하되, 아쉬운 점은 솔직하게. 학습자에게 존댓말.
 6. strengths와 weaknesses는 각각 2~3개. evidence는 반드시 실제 발화 인용.
 7. recommendations는 구체적인 행동 제언 2~3개 (예: "요청하기 전에 상대의 시간 제약부터 확인해 보세요").
+8. axisFeedback: 아래 네 관점 각각에 대해 학습자에게 **존댓말 한 문장**으로, 이번 대화에서 잘한 점 또는
+   아쉬운 점을 구체적으로 코멘트할 것. (앞의 4-1 규칙대로 학술 용어·축 이름은 절대 노출하지 말 것.)
+   - logic  : 구체적 근거·대안·리스크를 막을 방법을 얼마나 잘 폈는지
+   - trust  : 상대의 입장·기여·제약을 존중하고 지킬 수 있는 말로 신뢰를 쌓았는지
+   - emotion: 상대의 감정·상태를 먼저 읽고 인정해 주었는지
+   - timing : 그 말을 꺼낸 때가 대화 흐름에 맞았는지
 
 ## 등급(overallGrade) 기준
 평균 점수 기준: 85 이상 A+, 75~84 A, 65~74 B+, 55~64 B, 45~54 C+, 45 미만 C
@@ -86,6 +134,12 @@ ${stageBlocks.join('\n\n')}
   "observedStyle": "이 학습자가 주로 쓰는 설득 방식 서술 (3~5문장, 유형 라벨 없이)",
   "strengths": [ { "point": "강점", "evidence": "실제 발화 인용", "effect": "어떤 효과가 있었는지" } ],
   "weaknesses": [ { "point": "아쉬운 점", "evidence": "실제 발화 인용", "suggestion": "개선 제언" } ],
+  "axisFeedback": {
+    "logic": "근거·리스크 관점 한 줄 코멘트",
+    "trust": "신뢰·존중 관점 한 줄 코멘트",
+    "emotion": "감정·공감 관점 한 줄 코멘트",
+    "timing": "타이밍 관점 한 줄 코멘트"
+  },
   "recommendations": ["구체적 제언 2~3개"],
   "closingComment": "격려 한 마디"
 }`;
@@ -122,6 +176,16 @@ const REPORT_SCHEMA = {
         required: ['point', 'evidence', 'suggestion'],
       },
     },
+    axisFeedback: {
+      type: 'OBJECT',
+      properties: {
+        logic: { type: 'STRING' },
+        trust: { type: 'STRING' },
+        emotion: { type: 'STRING' },
+        timing: { type: 'STRING' },
+      },
+      required: ['logic', 'trust', 'emotion', 'timing'],
+    },
     recommendations: { type: 'ARRAY', items: { type: 'STRING' } },
     closingComment: { type: 'STRING' },
   },
@@ -131,6 +195,7 @@ const REPORT_SCHEMA = {
     'observedStyle',
     'strengths',
     'weaknesses',
+    'axisFeedback',
     'recommendations',
     'closingComment',
   ],
@@ -237,13 +302,21 @@ export async function onRequestPost({ request, env }) {
     return errorResponse('리포트 생성에 실패했어요. 잠시 후 다시 시도해 주세요.', 502);
   }
 
-  // 4) 검증·보정 — 평균 점수는 서버 계산값으로 확정
+  // 4) 검증·보정 — 평균 점수와 4축 강약은 서버 계산값으로 확정
   const asArray = (v) => (Array.isArray(v) ? v : []);
+  // 4축 강약(막대·상중하)은 저장된 점수로 계산하고(옵션 A), 한 줄 코멘트만 Gemini 결과를 붙인다(옵션 B).
+  // 학술 용어(academic)는 서버 고정값이라 모델이 잘못 뱉을 수 없다.
+  const axisFeedback = parsed.axisFeedback || {};
+  const axes = computeAxisStats(results).map((a) => ({
+    ...a,
+    comment: typeof axisFeedback[a.key] === 'string' ? axisFeedback[a.key].trim() : '',
+  }));
   const report = {
     overallGrade: typeof parsed.overallGrade === 'string' ? parsed.overallGrade : 'B',
     averageScore, // 모델 출력 대신 서버 계산값
     summary: parsed.summary || '',
     observedStyle: parsed.observedStyle || '',
+    axes, // 4축 평가 (서버 강약 + Gemini 코멘트)
     strengths: asArray(parsed.strengths).slice(0, 4),
     weaknesses: asArray(parsed.weaknesses).slice(0, 4),
     recommendations: asArray(parsed.recommendations).filter((r) => typeof r === 'string').slice(0, 4),
