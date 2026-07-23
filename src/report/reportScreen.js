@@ -70,9 +70,9 @@ export async function initReportScreen({ session, onBack }) {
   function renderLoading(message) {
     app.innerHTML = `
     <div class="report">
-      <div class="fx fx-soft" aria-hidden="true"><span>✦</span><span>🩷</span><span>✧</span><span>✦</span></div>
+      <div class="fx fx-soft" aria-hidden="true"><span>✦</span><span>✧</span><span>✧</span><span>✦</span></div>
       <div class="report-loading">
-        <div class="report-loading-heart">💗</div>
+        <div class="report-loading-heart">✦</div>
         <div class="report-loading-text">${escapeHtml(message)}<span class="dots"></span></div>
         <div class="report-loading-sub">모든 스테이지의 대화를 꼼꼼히 읽고 있어요 (최대 30초)</div>
       </div>
@@ -101,7 +101,7 @@ export async function initReportScreen({ session, onBack }) {
 
     app.innerHTML = `
     <div class="report">
-      <div class="fx fx-soft" aria-hidden="true"><span>💗</span><span>✦</span><span>✧</span><span>🩷</span><span>✦</span></div>
+      <div class="fx fx-soft" aria-hidden="true"><span>✦</span><span>✦</span><span>✧</span><span>✧</span><span>✦</span></div>
 
       <header class="report-topbar">
         <div class="map-title">
@@ -114,7 +114,7 @@ export async function initReportScreen({ session, onBack }) {
       </header>
 
       <section class="report-hero ${isTop ? 'top-grade' : ''}">
-        ${isTop ? `<div class="result-sparkles" aria-hidden="true"><span>✦</span><span>💗</span><span>✧</span><span>⭐</span><span>✦</span><span>🩷</span></div>` : ''}
+        ${isTop ? `<div class="result-sparkles" aria-hidden="true"><span>✦</span><span>✦</span><span>✧</span><span>⭐</span><span>✦</span><span>✧</span></div>` : ''}
         <div class="report-grade">${grade}</div>
         <div class="report-avg">평균 <strong>${r.averageScore}</strong>점 <span class="report-avg-note">(성공 기준 85)</span></div>
         <div class="report-stage-scores">

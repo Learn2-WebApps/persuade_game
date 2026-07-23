@@ -37,7 +37,7 @@
   gap: 4px;
   padding: 7px 14px;
   border-radius: 999px;
-  border: 2px solid #e8dcee;
+  border: 2px solid #e6d8c4;
   background: #fff;
   color: var(--ink-soft);
   font-size: 12px;
@@ -48,7 +48,7 @@
 }
 
 .topbar-home:hover {
-  color: #7c3aed;
+  color: #a86a24;
   border-color: #c9b0ea;
 }
 
@@ -106,7 +106,7 @@
 }
 
 .admin-input {
-  border: 2px solid #eee3f2;
+  border: 2px solid #ece2d4;
   background: #fff;
   border-radius: 12px;
   padding: 10px 14px;
@@ -124,7 +124,7 @@
 .admin-btn {
   position: relative;
   border: none;
-  background: linear-gradient(135deg, var(--pink), #ff6fa5);
+  background: linear-gradient(135deg, var(--pink), #a86a24);
   color: #fff;
   font-weight: 800;
   font-size: 13px;
@@ -132,7 +132,7 @@
   padding: 10px 18px;
   border-radius: 999px;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(255, 111, 165, 0.4);
+  box-shadow: 0 4px 12px rgba(168, 106, 36, 0.4);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -170,7 +170,7 @@
 }
 
 .mini-btn {
-  border: 2px solid #e8dcee;
+  border: 2px solid #e6d8c4;
   background: #fff;
   color: var(--ink-soft);
   font-weight: 800;
@@ -182,7 +182,7 @@
 }
 
 .mini-btn:hover {
-  background: #f6eef7;
+  background: #f3ebe0;
 }
 
 .form-error {
@@ -223,7 +223,7 @@
 .room-delete {
   flex: 0 0 auto;
   width: 38px;
-  border: 2px solid #f3dede;
+  border: 2px solid #ecdcc9;
   background: #fff;
   color: #c0574f;
   font-size: 14px;
@@ -264,7 +264,7 @@
 
 .room-item.selected {
   border-color: var(--pink);
-  background: #fff7fb;
+  background: #faf4ea;
 }
 
 .room-item-top {
@@ -297,7 +297,7 @@
 }
 
 .st-etc {
-  background: #f2f0f7;
+  background: #efe7d9;
   color: var(--ink-soft);
 }
 
@@ -323,13 +323,13 @@
 }
 
 .track-chip.track-work {
-  background: #e0ecff;
-  color: #1d4ed8;
+  background: #f0e6d4;
+  color: #8a5c30;
 }
 
 .track-chip.track-life {
-  background: #ffe6f2;
-  color: #be1a63;
+  background: #f7e6cf;
+  color: #a86a24;
 }
 
 /* 트랙 도입 이전 방 — 새 코드와 호환되지 않으니 눈에 띄게 */
@@ -368,7 +368,7 @@
   font-size: 42px;
   font-weight: 900;
   letter-spacing: 0.22em;
-  background: linear-gradient(120deg, #ff6fa5, #7cc4f5);
+  background: linear-gradient(120deg, #a86a24, #c8a06a);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -461,8 +461,8 @@
 }
 
 .summary-card {
-  background: linear-gradient(160deg, #fff7fb, #f2f9ff);
-  border: 2px solid #f4e6f0;
+  background: linear-gradient(160deg, #faf4ea, #f7efe1);
+  border: 2px solid #eaddc9;
   border-radius: 14px;
   padding: 12px;
   text-align: center;
@@ -502,7 +502,7 @@
 }
 
 .players-table thead th {
-  background: #f8f2fa;
+  background: #f5efe4;
   font-size: 11px;
   font-weight: 800;
   color: var(--ink-soft);
@@ -510,16 +510,16 @@
 }
 
 .players-table tbody tr.player-row {
-  border-top: 1px solid #f3ecf5;
+  border-top: 1px solid #ece2d4;
   cursor: pointer;
 }
 
 .players-table tbody tr.player-row:hover {
-  background: #fdf6fb;
+  background: #faf4ea;
 }
 
 .players-table tbody tr.player-row.expanded {
-  background: #fff3f9;
+  background: #faf3ea;
 }
 
 .players-table .num {
@@ -544,8 +544,8 @@
 }
 
 .results-row td {
-  background: #fbf7fd;
-  border-top: 1px dashed #eadcf0;
+  background: #faf5ec;
+  border-top: 1px dashed #e6d8c4;
 }
 
 .results-box {
@@ -565,7 +565,7 @@
 /* 참가자 최종 리포트 (관리자 뷰) */
 .admin-report {
   background: #fff;
-  border: 1px solid #f0e2ec;
+  border: 1px solid #ece0cf;
   border-radius: 12px;
   padding: 10px 14px;
   display: flex;
@@ -582,7 +582,7 @@
 .admin-report-grade {
   font-size: 18px;
   font-weight: 900;
-  color: var(--pink-deep, #ff6fa5);
+  color: var(--pink-deep, #a86a24);
   flex-shrink: 0;
 }
 
@@ -620,13 +620,13 @@
 .stage-score {
   border-radius: 999px;
   padding: 4px 12px;
-  background: #f2f0f7;
+  background: #efe7d9;
   color: var(--ink-soft);
   font-weight: 700;
 }
 
 .stage-score.has {
-  background: #e8f4ff;
+  background: #f0e6d4;
   color: #2e6da4;
 }
 

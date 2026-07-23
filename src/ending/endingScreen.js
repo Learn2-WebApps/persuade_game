@@ -14,7 +14,7 @@ export function initEndingScreen({ session, onBackToTracks, onExit }) {
   app.innerHTML = `
   <div class="entry ending">
     <div class="fx" aria-hidden="true">
-      <span>💗</span><span>✦</span><span>🩷</span><span>✧</span><span>💕</span><span>✦</span>
+      <span>✦</span><span>✦</span><span>✧</span><span>✧</span><span>✦</span><span>✦</span>
     </div>
 
     <div class="entry-card ending-card">

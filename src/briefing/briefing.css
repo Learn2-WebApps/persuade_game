@@ -16,7 +16,7 @@
 .brief-bg-placeholder {
   position: absolute;
   inset: 0;
-  background: linear-gradient(165deg, #d9e6ff 0%, #e9ddff 45%, #ffdcec 100%);
+  background: linear-gradient(165deg, #efe0cf 0%, #ecdfc9 45%, #f5e6cf 100%);
 }
 
 .brief-bg {
@@ -195,12 +195,12 @@
   padding: 14px 16px;
   border-top: none;
   border-radius: 16px;
-  background: linear-gradient(160deg, #fff7fb, #f3f8ff);
-  border: 1px solid #f2e2ef;
+  background: linear-gradient(160deg, #faf4ea, #f7efe1);
+  border: 1px solid #eaddc9;
 }
 
 .brief-block-tip .brief-block-head {
-  color: #7c3aed;
+  color: #a86a24;
 }
 
 /* ── 하단 버튼 ──────────────────────────────────── */
@@ -243,22 +243,22 @@
   font-weight: 900;
   letter-spacing: 0.1em;
   cursor: pointer;
-  box-shadow: 0 8px 22px rgba(255, 111, 165, 0.48);
+  box-shadow: 0 8px 22px rgba(168, 106, 36, 0.48);
   transition: transform 0.16s ease, box-shadow 0.16s ease;
   animation: brief-start-pulse 2s ease-in-out infinite;
 }
 
 .brief-start:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 30px rgba(255, 111, 165, 0.58);
+  box-shadow: 0 12px 30px rgba(168, 106, 36, 0.58);
 }
 
 @keyframes brief-start-pulse {
   0%, 100% {
-    box-shadow: 0 8px 22px rgba(255, 111, 165, 0.48);
+    box-shadow: 0 8px 22px rgba(168, 106, 36, 0.48);
   }
   50% {
-    box-shadow: 0 8px 30px rgba(255, 111, 165, 0.72);
+    box-shadow: 0 8px 30px rgba(168, 106, 36, 0.72);
   }
 }
 

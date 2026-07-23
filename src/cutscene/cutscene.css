@@ -53,11 +53,11 @@
     radial-gradient(46% 38% at 50% 46%, rgba(255, 232, 186, 0.3), transparent 70%),
     linear-gradient(160deg, #4a2f22 0%, #6d4426 55%, #8a5c30 100%);
 }
-/* 책 펼침 — 빛나는 연출 */
+/* 책 펼침 — 빛나는 연출 (앰버 금빛 글로우) */
 .cut-bg-placeholder[data-scene='book_open'] {
   background:
-    radial-gradient(52% 42% at 50% 44%, rgba(255, 248, 214, 0.72), transparent 72%),
-    linear-gradient(170deg, #6b5a86 0%, #8f7aa8 50%, #c9a9c0 100%);
+    radial-gradient(52% 42% at 50% 44%, rgba(255, 244, 206, 0.78), transparent 72%),
+    linear-gradient(170deg, #5a4630 0%, #8a6c3e 50%, #c9a97a 100%);
 }
 /* 노을 진 서점 */
 .cut-bg-placeholder[data-scene='bookstore_night'] {
@@ -161,8 +161,9 @@
   min-height: 132px;
   padding: 26px 30px 18px;
   border-radius: 22px;
-  background: rgba(255, 255, 255, 0.9);
-  border: 2px solid rgba(255, 255, 255, 0.85);
+  /* 서점 등불 톤 — 따뜻한 크림 반투명 (대화 화면 대사창과 같은 결) */
+  background: rgba(255, 249, 240, 0.92);
+  border: 1px solid rgba(255, 220, 180, 0.5);
   box-shadow: 0 14px 40px rgba(10, 8, 24, 0.4);
   backdrop-filter: blur(10px);
   display: flex;
@@ -220,7 +221,7 @@
   font-size: 13px;
   font-weight: 900;
   cursor: pointer;
-  box-shadow: 0 5px 16px rgba(255, 111, 165, 0.42);
+  box-shadow: 0 5px 16px rgba(168, 106, 36, 0.42);
   animation: cut-next-bounce 1.4s ease-in-out infinite;
   transition: transform 0.15s ease;
 }

@@ -250,7 +250,7 @@ export async function initPlayScreen({ roomCode, track, stageId, totalStages = 5
       <div class="result-card ${success ? 'success' : ''}">
         ${
           success
-            ? `<div class="result-sparkles" aria-hidden="true"><span>✦</span><span>💗</span><span>✧</span><span>⭐</span><span>✦</span><span>🩷</span></div>`
+            ? `<div class="result-sparkles" aria-hidden="true"><span>✦</span><span>✦</span><span>✧</span><span>⭐</span><span>✦</span><span>✧</span></div>`
             : ''
         }
         <div class="result-stage">STAGE ${state.stage.order} 종료</div>
@@ -430,7 +430,7 @@ function renderHtml(state, totalStages) {
 
     <!-- 좌상단: 챕터 태그 -->
     <div class="vn-chapter">
-      <span class="chapter-heart" aria-hidden="true">💗</span>
+      <span class="chapter-heart" aria-hidden="true">✦</span>
       <span class="chapter-num">${pad2(stage.order)}</span>
       <span class="chapter-sep">|</span>
       <span class="chapter-title">${escapeHtml(stage.title)}</span>
@@ -440,7 +440,7 @@ function renderHtml(state, totalStages) {
     <div class="vn-hud">
       <div class="ep-nodes">${epNodes}</div>
       <div class="gauge" title="설득 게이지 (85 = 성공 기준선)">
-        <span class="gauge-heart" aria-hidden="true">💗</span>
+        <span class="gauge-heart" aria-hidden="true">✦</span>
         <div class="gauge-track">
           <div class="gauge-fill ${gaugeClass(state.gauge)}" style="width:${state.gauge}%"></div>
           <div class="gauge-goal" style="left:${SUCCESS_LINE}%"></div>

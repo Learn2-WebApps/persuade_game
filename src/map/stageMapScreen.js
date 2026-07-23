@@ -88,7 +88,7 @@ export async function initStageMapScreen({ session, onSelectStage, onExit, onSho
     app.innerHTML = `
     <div class="map">
       <div class="fx fx-soft" aria-hidden="true">
-        <span>💗</span><span>✦</span><span>✧</span><span>🩷</span><span>✦</span>
+        <span>✦</span><span>✦</span><span>✧</span><span>✧</span><span>✦</span>
       </div>
       <header class="map-topbar">
         <div class="map-title">
