@@ -30,13 +30,37 @@ export async function initTrackSelectScreen({ session, onSelectTrack, onShowRepo
 
   const isFinished = (track) => readProgress(player, track).status === 'finished' && !!player;
 
-  const progressLabel = (track) => {
+  const TOTAL_EPISODES = 5;
+
+  /** 다 읽은 편 수 — 진행도 점을 채우는 데 쓴다 */
+  const doneCount = (track) => {
+    const p = readProgress(player, track);
+    if (!player) return 0;
+    if (p.status === 'finished') return TOTAL_EPISODES;
+    // currentMaxStageOrder는 "다음에 열릴 편"이라 하나를 뺀다
+    return Math.max(0, Math.min(TOTAL_EPISODES, (p.currentMaxStageOrder || 1) - 1));
+  };
+
+  /** 책을 읽어 내려간 만큼 점이 차오른다 (상태 뱃지보다 진행이 한눈에 보인다) */
+  const episodeDots = (track) => {
+    const done = doneCount(track);
+    return Array.from(
+      { length: TOTAL_EPISODES },
+      (_, i) => `<i class="dot${i < done ? ' is-read' : ''}"></i>`
+    ).join('');
+  };
+
+  const stateLine = (track) => {
     const p = readProgress(player, track);
     if (!player) return '';
-    if (p.status === 'finished') return `✅ 완료됨 · ${p.totalScore}점`;
-    if (p.totalScore > 0) return `▶ 진행 중 · ${p.totalScore}점`;
-    return '아직 시작 전';
+    if (p.status === 'finished') return `끝까지 읽음 · ${p.totalScore}점`;
+    const done = doneCount(track);
+    if (done > 0) return `${done}편까지 읽음 · ${p.totalScore}점`;
+    return '아직 펼치지 않음';
   };
+
+  /** 장의 분위기를 보여주는 삽화 — 각 트랙 첫 스테이지의 실제 배경을 쓴다 */
+  const plateImage = (track) => `/assets/${track}/bg/stage1.jpg`;
 
   // 한 트랙만 마쳐도 게임을 끝낼 수 있다 (두 트랙 강제 아님)
   const canFinish = TRACK_SELECT_ORDER.some(isFinished);
@@ -50,48 +74,59 @@ export async function initTrackSelectScreen({ session, onSelectTrack, onShowRepo
     </div>
 
     <div class="track-wrap">
-      <h1 class="track-heading">어떤 이야기를 펼칠까?</h1>
-      <p class="track-sub">
-        📖 ${escapeHtml(session.affiliation)} · ${escapeHtml(session.name)} 님 — 책장은 언제든 다시 넘길 수 있어요.
-      </p>
+      <header class="track-head">
+        <span class="track-kicker">설득의 정석</span>
+        <h1 class="track-heading">어떤 장을 펼칠까</h1>
+        <p class="track-sub">
+          ${escapeHtml(session.affiliation)} · ${escapeHtml(session.name)} 님 — 책장은 언제든 다시 넘길 수 있습니다
+        </p>
+      </header>
 
-      <div class="track-cards">
-        ${TRACK_SELECT_ORDER.map((key) => {
+      <div class="chapters">
+        ${TRACK_SELECT_ORDER.map((key, i) => {
           const t = TRACKS[key];
           const done = isFinished(key);
           return `
-          <div class="track-slot">
-            <button class="track-card track-card-${key} ${done ? 'is-done' : ''}" type="button" data-track="${key}">
-              <span class="track-card-emoji" aria-hidden="true">${t.emoji}</span>
-              <span class="track-card-title">${escapeHtml(t.cardTitle)}</span>
-              <span class="track-card-desc">${escapeHtml(t.cardDesc)}</span>
-              <span class="track-card-progress">${escapeHtml(progressLabel(key))}</span>
+          <article class="chapter chapter-${key}${done ? ' is-done' : ''}">
+            <button class="chapter-open" type="button" data-track="${key}"
+                    aria-label="${escapeHtml(t.cardTitle)} 펼치기">
+              <span class="chapter-plate">
+                <span class="chapter-art" style="background-image:url('${plateImage(key)}')"></span>
+                ${done ? '<span class="chapter-ribbon" aria-hidden="true"></span>' : ''}
+              </span>
+              <span class="chapter-body">
+                <span class="chapter-num">제 ${i + 1} 장</span>
+                <span class="chapter-title">${escapeHtml(t.cardTitle)}</span>
+                <span class="chapter-desc">${escapeHtml(t.cardDesc)}</span>
+                <span class="chapter-meta">
+                  <span class="chapter-dots" aria-hidden="true">${episodeDots(key)}</span>
+                  <span class="chapter-state">${escapeHtml(stateLine(key))}</span>
+                </span>
+              </span>
             </button>
-            ${done ? `<button class="track-report-btn" type="button" data-report-track="${key}">📊 리포트 다시 보기</button>` : ''}
-          </div>`;
+            ${done ? `<button class="chapter-report" type="button" data-report-track="${key}">읽은 기록 보기</button>` : ''}
+          </article>`;
         }).join('')}
       </div>
 
-      <div class="track-footer">
-        <button class="entry-btn finish-game" type="button" ${canFinish ? '' : 'disabled'}>
-          <span class="entry-btn-label">🏁 게임 마치기</span>
-        </button>
-        <p class="track-footer-note">
+      <footer class="track-foot">
+        <button class="book-close finish-game" type="button" ${canFinish ? '' : 'disabled'}>책을 덮는다</button>
+        <p class="track-foot-note">
           ${
             canFinish
-              ? '한 장만 읽어도 괜찮아요. 마칠 준비가 되면 눌러주세요.'
-              : '한 트랙을 끝까지 마치면 게임을 마칠 수 있어요.'
+              ? '한 장만 읽어도 괜찮습니다. 마칠 준비가 되면 눌러주세요.'
+              : '한 장을 끝까지 읽으면 책을 덮을 수 있습니다.'
           }
         </p>
-        <button class="end-btn track-exit" type="button">나가기</button>
-      </div>
+        <button class="track-exit" type="button">나가기</button>
+      </footer>
     </div>
   </div>`;
 
-  app.querySelectorAll('.track-card').forEach((btn) => {
+  app.querySelectorAll('.chapter-open').forEach((btn) => {
     btn.addEventListener('click', () => onSelectTrack(btn.dataset.track));
   });
-  app.querySelectorAll('.track-report-btn').forEach((btn) => {
+  app.querySelectorAll('.chapter-report').forEach((btn) => {
     btn.addEventListener('click', () => onShowReport && onShowReport(btn.dataset.reportTrack));
   });
   const finishBtn = app.querySelector('.finish-game');
