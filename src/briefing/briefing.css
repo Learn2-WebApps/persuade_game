@@ -204,6 +204,55 @@
 }
 
 /* ── 하단 버튼 ──────────────────────────────────── */
+/* 난이도 배지 — EP 번호 옆에 붙는다 */
+.brief-level {
+  margin-left: 8px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  vertical-align: middle;
+  background: rgba(168, 106, 36, 0.14);
+  color: #a8531f;
+  border: 1px solid rgba(168, 106, 36, 0.28);
+}
+
+.brief-level.lv-4,
+.brief-level.lv-5 {
+  background: rgba(176, 58, 46, 0.14);
+  color: #b03a2e;
+  border-color: rgba(176, 58, 46, 0.3);
+}
+
+/* 이번 스테이지가 겨누는 설득 기술 한 줄 */
+.brief-learn {
+  margin: 6px 0 2px;
+  padding: 7px 12px;
+  border-radius: 10px;
+  background: rgba(168, 106, 36, 0.09);
+  border-left: 3px solid rgba(168, 106, 36, 0.45);
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.55;
+  color: #8a5a22;
+  word-break: keep-all;
+}
+
+/* 마이크 안내 — 음성 입력이 가능한 브라우저에서만 나온다 */
+.brief-mic-notice {
+  margin: 0 auto 10px;
+  max-width: 640px;
+  padding: 9px 16px;
+  border: 1px dashed rgba(168, 106, 36, 0.35);
+  border-radius: 12px;
+  background: rgba(255, 252, 246, 0.82);
+  font-size: 12.5px;
+  line-height: 1.6;
+  text-align: center;
+  color: #7a6a52;
+  word-break: keep-all;
+}
+
 .brief-actions {
   display: flex;
   align-items: center;

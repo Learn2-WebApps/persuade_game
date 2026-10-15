@@ -184,6 +184,39 @@ export async function fetchStageResults(roomCode, playerId, track) {
   return out;
 }
 
+/** 채점 4축 키 — functions/api/score.js의 SCORING_AXES와 이름을 맞춘다. */
+const AXIS_KEYS = ['emotion', 'logic', 'trust', 'timing'];
+
+/**
+ * 턴의 4축 점수를 저장 가능한 형태로 정규화한다.
+ * 누락·비정상 값은 0으로 채우고, 항상 4축을 모두 포함한다
+ * (Firestore가 undefined를 거부하므로 키를 빼지 않고 0을 넣는다).
+ */
+function normalizeAxisScores(raw) {
+  const out = {};
+  for (const key of AXIS_KEYS) {
+    const v = Number(raw?.[key]);
+    out[key] = Number.isFinite(v) ? v : 0;
+  }
+  return out;
+}
+
+/**
+ * 어조 평가를 저장 가능한 형태로 정규화한다.
+ * 마이크로 말한 턴에만 값이 있고, 타이핑한 턴은 null이다
+ * (Firestore는 undefined를 거부하므로 없을 때는 반드시 null로 넣는다).
+ */
+function normalizeTone(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+  const str = (v) => (typeof v === 'string' ? v : '');
+  return {
+    pace: str(raw.pace),
+    warmth: str(raw.warmth),
+    confidence: str(raw.confidence),
+    note: str(raw.note),
+  };
+}
+
 /**
  * 스테이지 결과를 저장하고 플레이어 집계 필드를 갱신한다.
  *
@@ -193,12 +226,18 @@ export async function fetchStageResults(roomCode, playerId, track) {
  *
  * @param {object} ctx - { orderMap: {stageId: order}, totalStages, activeRounds }
  */
-export async function saveStageResult(roomCode, playerId, track, stageId, { stageScore, turnCount, turns }, ctx) {
+export async function saveStageResult(roomCode, playerId, track, stageId, { stageScore, turnCount, turns, meta }, ctx) {
   // Firestore는 undefined 값을 거부한다(저장 전체가 실패) — 턴 로그를 안전한 형태로 정규화
   const safeTurns = (turns ?? []).map((t) => ({
     userMessage: t.userMessage ?? '',
     scoreDelta: Number(t.scoreDelta) || 0,
     gaugeAfter: Number(t.gaugeAfter) || 0,
+    // 4축 점수 — 최종 리포트의 4축 평가(functions/api/report.js)와 설득 레벨(cutscene/level.js)이
+    // 저장된 turns[].axisScores를 읽어 집계한다. 여기서 빠뜨리면 모든 축이 0으로 계산된다.
+    axisScores: normalizeAxisScores(t.axisScores),
+    // 어조 — 마이크로 말한 턴에만 들어온다. 점수와 무관하며 리포트의 "전달력" 코칭에만 쓴다.
+    // (오디오 자체는 저장하지 않는다 — Firestore 문서 1MB 한도를 넘기고, 보관할 이유도 없다)
+    tone: normalizeTone(t.tone),
     actionTags: Array.isArray(t.actionTags) ? t.actionTags.filter((x) => typeof x === 'string') : [],
     characterReply: t.characterReply ?? '',
     timestamp: Number(t.timestamp) || Date.now(),
@@ -217,6 +256,15 @@ export async function saveStageResult(roomCode, playerId, track, stageId, { stag
   await setDoc(resultRef, {
     stageScore,
     turnCount: turnCount ?? safeTurns.length,
+    // 난이도·최고점·최종 게이지. stageScore는 최고점이므로, 마지막에 흐트러졌는지는
+    // peakGauge와 finalGauge의 차이로만 알 수 있다 (리포트 디브리핑용).
+    meta: {
+      difficultyLevel: Number(meta?.difficultyLevel) || 0,
+      successLine: Number(meta?.successLine) || 0,
+      peakGauge: Number(meta?.peakGauge) || Number(stageScore) || 0,
+      finalGauge: Number(meta?.finalGauge) || Number(stageScore) || 0,
+      succeeded: Boolean(meta?.succeeded),
+    },
     // 최종 리포트가 실제 발화를 인용할 수 있도록 턴별 대화 로그를 저장한다
     turns: safeTurns,
     completedAt: serverTimestamp(),

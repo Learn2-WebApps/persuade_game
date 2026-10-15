@@ -1677,6 +1677,71 @@ body::before {
   word-break: keep-all;
 }
 
+/* ── 전달력(말투) 섹션 — 음성으로 말한 턴이 있을 때만 나온다 ── */
+.delivery-scope {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-dim-light);
+  word-break: keep-all;
+}
+
+.delivery-scope .delivery-note {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+.tone-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 12px 0 4px;
+}
+
+.tone-chip {
+  flex: 1 1 110px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 12px 10px;
+  border: 1px solid #ece0cf;
+  border-radius: 14px;
+  background: rgba(255, 252, 246, 0.85);
+  text-align: center;
+}
+
+.tone-chip .tone-icon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.tone-chip .tone-caption {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-dim-light);
+}
+
+.tone-chip .tone-value {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--accent-deep, #a8531f);
+  word-break: keep-all;
+}
+
+.delivery-notes {
+  margin: 10px 0 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--text-dim-light);
+  word-break: keep-all;
+}
+
 .report-item {
   display: flex;
   flex-direction: column;

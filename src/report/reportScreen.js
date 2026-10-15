@@ -52,6 +52,42 @@ function renderAxes(axes) {
       </section>`;
 }
 
+/**
+ * 전달력(말투) 섹션 — 마이크로 말한 턴이 있을 때만 서버가 delivery를 채워 준다.
+ * 점수·등급에는 반영되지 않는 별도 코칭이라, 그 사실을 화면에도 적어 둔다.
+ * (타이핑으로만 플레이했거나 옛 저장 리포트면 delivery가 없어 섹션 자체가 빠진다)
+ */
+function renderDelivery(delivery) {
+  if (!delivery || !delivery.voiceTurnCount) return '';
+
+  const chip = (icon, caption, label) => `
+        <div class="tone-chip">
+          <span class="tone-icon" aria-hidden="true">${icon}</span>
+          <span class="tone-caption">${caption}</span>
+          <strong class="tone-value">${escapeHtml(label || '보통')}</strong>
+        </div>`;
+
+  const notes = (delivery.notes || [])
+    .map((n) => `<li>${escapeHtml(n)}</li>`)
+    .join('');
+
+  return `
+      <section class="report-card">
+        <h2 class="report-card-title">🎤 전달력 (말투)</h2>
+        <p class="delivery-scope">
+          음성으로 말한 ${delivery.voiceTurnCount}번의 발화를 들어본 결과예요.
+          <span class="delivery-note">점수에는 반영되지 않아요 — 내용과 별개로 보는 참고 코칭입니다.</span>
+        </p>
+        <div class="tone-chips">
+          ${chip('⏱️', '말의 속도', delivery.pace?.label)}
+          ${chip('🌡️', '목소리 온도', delivery.warmth?.label)}
+          ${chip('🎯', '전달의 확신', delivery.confidence?.label)}
+        </div>
+        ${delivery.comment ? `<p class="report-text">${escapeHtml(delivery.comment)}</p>` : ''}
+        ${notes ? `<ul class="delivery-notes">${notes}</ul>` : ''}
+      </section>`;
+}
+
 export async function initReportScreen({ session, onBack }) {
   const app = document.getElementById('app');
   // 리포트는 트랙별로 따로 생성·저장된다 (선택한 트랙의 스테이지 기준)
@@ -164,6 +200,8 @@ export async function initReportScreen({ session, onBack }) {
       </section>
 
       ${renderAxes(r.axes)}
+
+      ${renderDelivery(r.delivery)}
 
       <section class="report-card">
         <h2 class="report-card-title">🔍 관찰된 설득 스타일</h2>

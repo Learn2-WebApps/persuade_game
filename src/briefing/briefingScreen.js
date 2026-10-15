@@ -14,6 +14,8 @@
 
 import './briefing.css';
 import { resolveBackground, resolveCharacter, preloadStageAssets } from '../play/assets.js';
+import { isVoiceInputSupported } from '../play/voiceInput.js';
+import { readDifficulty, levelLabel } from '../common/difficulty.js';
 
 const escapeHtml = (s) =>
   String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -39,6 +41,7 @@ function readBrief(stage) {
 export function initBriefingScreen({ stage, track, onStart, onBack }) {
   const app = document.getElementById('app');
   const brief = readBrief(stage);
+  const diff = readDifficulty(stage);
   const pad2 = (n) => String(n).padStart(2, '0');
 
   app.innerHTML = `
@@ -64,7 +67,15 @@ export function initBriefingScreen({ stage, track, onStart, onBack }) {
 
         <!-- 오른쪽: 상황 / 목표 / 조언 -->
         <div class="brief-card">
-          <div class="brief-ep">EP.${pad2(stage.order)}</div>
+          <div class="brief-ep">
+            EP.${pad2(stage.order)}
+            <span class="brief-level lv-${diff.level}">Lv${diff.level} ${escapeHtml(levelLabel(diff.level))}</span>
+          </div>
+          ${
+            stage.learningPoint
+              ? `<div class="brief-learn"><span aria-hidden="true">🎯</span> 이번 훈련 포인트 — ${escapeHtml(stage.learningPoint)}</div>`
+              : ''
+          }
           <h1 class="brief-title">${escapeHtml(stage.title || '')}</h1>
 
           <section class="brief-block">
@@ -83,6 +94,14 @@ export function initBriefingScreen({ stage, track, onStart, onBack }) {
           </section>
         </div>
       </div>
+
+      <!-- 마이크를 쓸 수 있는 브라우저에서만 보인다. 음성이 평가를 위해 전송된다는 사실을 미리 알린다. -->
+      ${
+        isVoiceInputSupported()
+          ? `<p class="brief-mic-notice">🎤 대화 중 마이크 버튼을 누르면 말로 대답할 수 있어요.
+               말한 내용은 글로 옮겨져 화면에 보이고, 말투 코칭을 위해 음성이 함께 전송됩니다.</p>`
+          : ''
+      }
 
       <div class="brief-actions">
         <button class="brief-back" type="button">← 스테이지 맵</button>

@@ -71,11 +71,85 @@ function computeAxisStats(results) {
   });
 }
 
+// ── 전달력(어조) 집계 ────────────────────────────────────────
+// 마이크로 말한 턴에만 turns[].tone이 있다. 타이핑한 턴은 null이라 집계에서 빠진다.
+// [원칙] 어조는 점수·등급에 전혀 반영하지 않는다 — 4축과 별개의 코칭 섹션으로만 보여준다.
+const TONE_LABELS = {
+  pace: { fast: '빠른 편', natural: '편안한 속도', slow: '느린 편' },
+  warmth: { warm: '따뜻한 목소리', neutral: '무난한 톤', cold: '사무적인 톤' },
+  confidence: { confident: '안정적인 전달', neutral: '보통', hesitant: '머뭇거리는 전달' },
+};
+
+/** 배열에서 가장 자주 나온 값 */
+function mostFrequent(values) {
+  const counts = {};
+  for (const v of values) counts[v] = (counts[v] || 0) + 1;
+  let best = '';
+  let bestN = 0;
+  for (const [v, n] of Object.entries(counts)) {
+    if (n > bestN) {
+      best = v;
+      bestN = n;
+    }
+  }
+  return best;
+}
+
+/**
+ * 음성으로 말한 턴들의 어조를 모아 "전달력" 요약을 만든다.
+ * @returns {object | null} 음성 턴이 하나도 없으면 null (리포트에서 섹션 자체가 빠진다)
+ */
+function computeDeliveryStats(results) {
+  const tones = [];
+  let totalTurns = 0;
+  for (const r of results) {
+    for (const t of r.turns || []) {
+      totalTurns += 1;
+      if (t.tone && typeof t.tone === 'object' && t.tone.pace) tones.push(t.tone);
+    }
+  }
+  if (!tones.length) return null;
+
+  const dominant = (key) => {
+    const value = mostFrequent(tones.map((t) => t[key]).filter(Boolean));
+    return { value, label: TONE_LABELS[key][value] || '보통' };
+  };
+
+  return {
+    voiceTurnCount: tones.length,
+    totalTurnCount: totalTurns,
+    pace: dominant('pace'),
+    warmth: dominant('warmth'),
+    confidence: dominant('confidence'),
+    // 턴별 한 줄 코칭 — 프롬프트 근거로 쓰고, 화면에도 몇 개만 추려 보여준다
+    notes: tones.map((t) => t.note).filter((n) => typeof n === 'string' && n.trim()),
+  };
+}
+
 // ─────────────────────────────────────────────────────────────
 // 프롬프트
 // ─────────────────────────────────────────────────────────────
 
-function buildReportPrompt(player, stageBlocks, averageScore, track) {
+/** 음성으로 말한 턴이 있을 때만 붙는 전달력 지시문 */
+function deliveryInstruction(delivery) {
+  const notes = delivery.notes.slice(0, 12).map((n) => `  · ${n}`).join('\n');
+  return `
+
+## 전달력 (음성으로 말한 발화 ${delivery.voiceTurnCount}턴 / 전체 ${delivery.totalTurnCount}턴)
+이 학습자는 일부 발화를 실제 목소리로 했고, 말투를 턴마다 따로 관찰해 두었다.
+- 말의 속도: 대체로 ${delivery.pace.label}
+- 목소리의 온도: 대체로 ${delivery.warmth.label}
+- 전달의 확신: 대체로 ${delivery.confidence.label}
+- 턴별 관찰 메모:
+${notes || '  (메모 없음)'}
+
+위 관찰을 근거로 deliveryFeedback에 **말의 내용이 아니라 "전달 방식"에 대한 코칭을 2~3문장**으로 쓸 것.
+- 잘 전달된 점을 먼저 짚고, 아쉬운 점과 다음에 해볼 것을 이어서 쓸 것. 존댓말.
+- 점수·등급과 연결짓지 말 것. 전달력은 점수에 반영되지 않았다는 사실과 어긋나는 말을 쓰지 말 것.
+- "당신의 목소리는 ~한 사람입니다" 같은 성격 규정은 하지 말 것. 이번 대화에서 관찰된 것만 말할 것.`;
+}
+
+function buildReportPrompt(player, stageBlocks, averageScore, track, delivery) {
   return `당신은 설득 커뮤니케이션 코치입니다. 학습자가 설득 훈련 게임에서 남긴 전체 대화 기록을 분석해,
 개인별 설득 강점·약점과 제언을 담은 최종 리포트를 작성합니다.
 
@@ -96,7 +170,7 @@ function buildReportPrompt(player, stageBlocks, averageScore, track) {
   ④ 타이밍 — 대화 흐름에 맞는 때에 꺼낸 말인가
 
 ## 스테이지별 대화 기록
-${stageBlocks.join('\n\n')}
+${stageBlocks.join('\n\n')}${delivery ? deliveryInstruction(delivery) : ''}
 
 ## 분석 지침 (매우 중요)
 1. **반드시 학습자의 실제 발화를 그대로 인용해 근거로 삼을 것.** 위 대화 기록에 없는 문장을 지어내면 절대 안 된다.
@@ -140,7 +214,7 @@ ${stageBlocks.join('\n\n')}
     "emotion": "감정·공감 관점 한 줄 코멘트",
     "timing": "타이밍 관점 한 줄 코멘트"
   },
-  "recommendations": ["구체적 제언 2~3개"],
+  "recommendations": ["구체적 제언 2~3개"],${delivery ? `\n  "deliveryFeedback": "전달 방식(말투)에 대한 코칭 2~3문장",` : ''}
   "closingComment": "격려 한 마디"
 }`;
 }
@@ -200,6 +274,16 @@ const REPORT_SCHEMA = {
     'closingComment',
   ],
 };
+
+/** 음성 턴이 있을 때만 전달력 코칭 필드를 스키마에 넣는다 (텍스트 전용 플레이는 기존과 동일) */
+function reportSchemaFor(delivery) {
+  if (!delivery) return REPORT_SCHEMA;
+  return {
+    ...REPORT_SCHEMA,
+    properties: { ...REPORT_SCHEMA.properties, deliveryFeedback: { type: 'STRING' } },
+    required: [...REPORT_SCHEMA.required, 'deliveryFeedback'],
+  };
+}
 
 /** 스테이지 한 개의 대화 기록을 프롬프트 블록으로 만든다 */
 function buildStageBlock(stage, result) {
@@ -289,13 +373,18 @@ export async function onRequestPost({ request, env }) {
   results.sort((a, b) => (stageById[a.id]?.order || 99) - (stageById[b.id]?.order || 99));
   const averageScore = Math.round(results.reduce((sum, r) => sum + (r.stageScore || 0), 0) / results.length);
   const stageBlocks = results.map((r) => buildStageBlock(stageById[r.id], r));
-  const prompt = buildReportPrompt(player, stageBlocks, averageScore, track);
+  // 마이크로 말한 턴이 하나라도 있으면 전달력 섹션이 생긴다. 없으면 null → 리포트에서 통째로 빠진다.
+  const delivery = computeDeliveryStats(results);
+  const prompt = buildReportPrompt(player, stageBlocks, averageScore, track, delivery);
 
   // 3) Gemini 리포트 생성
   let raw;
   let parsed;
   try {
-    raw = await callGemini(env, reportModel, prompt, { temperature: 0.7, responseSchema: REPORT_SCHEMA });
+    raw = await callGemini(env, reportModel, prompt, {
+      temperature: 0.7,
+      responseSchema: reportSchemaFor(delivery),
+    });
     parsed = parseGeminiJson(raw);
   } catch (err) {
     console.error('[report] Gemini 리포트 생성 실패:', err, raw ? `원문: ${raw.slice(0, 500)}` : '');
@@ -320,6 +409,18 @@ export async function onRequestPost({ request, env }) {
     strengths: asArray(parsed.strengths).slice(0, 4),
     weaknesses: asArray(parsed.weaknesses).slice(0, 4),
     recommendations: asArray(parsed.recommendations).filter((r) => typeof r === 'string').slice(0, 4),
+    // 전달력 — 음성으로 말한 턴이 있을 때만 들어간다 (점수·등급과는 무관한 별도 코칭 섹션)
+    delivery: delivery
+      ? {
+          voiceTurnCount: delivery.voiceTurnCount,
+          totalTurnCount: delivery.totalTurnCount,
+          pace: delivery.pace,
+          warmth: delivery.warmth,
+          confidence: delivery.confidence,
+          notes: delivery.notes.slice(0, 3), // 화면에는 대표 메모 몇 개만
+          comment: typeof parsed.deliveryFeedback === 'string' ? parsed.deliveryFeedback.trim() : '',
+        }
+      : null,
     closingComment: parsed.closingComment || '',
     stageScores: results.map((r) => ({
       stageId: r.id,

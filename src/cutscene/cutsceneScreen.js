@@ -21,6 +21,33 @@ import { formatLine } from './josa.js';
 
 const TYPING_SPEED_MS = 34; // 내레이션이라 대화보다 조금 느리게
 
+/**
+ * 장면이 바뀔 때 대사를 잠깐 비워두는 시간(ms).
+ * 배경 크로스페이드(0.75s)가 절반쯤 진행된 뒤 새 대사가 들어오게 해서,
+ * "글자는 이미 바뀌었는데 그림이 뒤늦게 넘어가는" 어긋남을 없앤다.
+ */
+const SCENE_HOLD_MS = 420;
+
+/** 첫 장면 에셋을 기다리는 최대 시간. 넘으면 그냥 시작한다 (무한 대기 방지) */
+const FIRST_SCENE_WAIT_MS = 2500;
+
+/**
+ * 이미지 한 장을 미리 받아 브라우저 캐시에 올린다.
+ * 성공·실패 모두 resolve한다 — 에셋이 없어도 컷신은 진행되어야 하므로.
+ */
+function preloadImage(src) {
+  return new Promise((resolve) => {
+    if (!src) return resolve();
+    const img = new Image();
+    img.onload = resolve;
+    img.onerror = resolve;
+    img.decoding = 'async';
+    img.src = src;
+  });
+}
+
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 const escapeHtml = (s) =>
   String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -89,9 +116,11 @@ export function initCutsceneScreen({ scenes, vars = {}, onDone }) {
   let sceneIndex = -1; // showScene(0)에서 0이 된다
   let lineIndex = 0;
   let typingTimer = null;
+  let holdTimer = null; // 장면 전환 중 대사를 잠깐 비워두는 타이머
   let typingFull = '';
   let activeBg = 'a';
   let finished = false;
+  let transitioning = false; // 장면 전환 연출이 진행 중인가
   let currentBackground = null;
   let currentCharacter = null;
 
@@ -188,19 +217,51 @@ export function initCutsceneScreen({ scenes, vars = {}, onDone }) {
   }
 
   // ── 진행 ─────────────────────────────────────────────────
-  function showScene(index) {
+  /**
+   * 장면을 표시한다.
+   *
+   * 장면이 바뀌면 배경이 0.75초에 걸쳐 크로스페이드되는데, 예전에는 대사가 그와 무관하게
+   * 즉시 바뀌어서 "글자는 다음 장면인데 그림은 아직 이전 장면"인 순간이 생겼다.
+   * 이제는 대사 박스를 먼저 비우고, 전환이 절반쯤 진행된 뒤 새 대사를 띄운다.
+   *
+   * @param {boolean} [opts.instant] 첫 장면처럼 전환 연출 없이 바로 띄울 때
+   */
+  function showScene(index, { instant = false } = {}) {
     sceneIndex = index;
     lineIndex = 0;
     const scene = script[sceneIndex];
+    const sceneChanged = !instant && scene.background && scene.background !== currentBackground;
+
+    const paint = () => {
+      updateProgress();
+      el.box.classList.remove('cut-box-held');
+      typeLine(scene.lines[0] ?? '');
+      transitioning = false;
+    };
+
+    if (!sceneChanged) {
+      setBackground(scene.background);
+      setCharacter(scene.character);
+      paint();
+      return;
+    }
+
+    // 대사를 잠깐 걷어내고 그림을 먼저 넘긴다
+    transitioning = true;
+    clearInterval(typingTimer);
+    typingTimer = null;
+    el.box.classList.add('cut-box-held');
     setBackground(scene.background);
     setCharacter(scene.character);
-    updateProgress();
-    typeLine(scene.lines[0] ?? '');
+    clearTimeout(holdTimer);
+    holdTimer = setTimeout(paint, SCENE_HOLD_MS);
   }
 
   /** 클릭/다음 버튼 — 타이핑 중이면 완성, 아니면 다음 줄/장면 */
   function advance() {
     if (finished) return;
+    // 장면 전환 중에는 입력을 삼킨다 — 연타로 장면을 건너뛰면 다시 뚝뚝 끊긴다
+    if (transitioning) return;
     if (finishTyping()) return;
 
     const scene = script[sceneIndex];
@@ -220,7 +281,9 @@ export function initCutsceneScreen({ scenes, vars = {}, onDone }) {
     if (finished) return;
     finished = true;
     clearInterval(typingTimer);
+    clearTimeout(holdTimer);
     typingTimer = null;
+    holdTimer = null;
     document.removeEventListener('keydown', onKey); // 화면을 떠나므로 키 핸들러 해제
     el.root.classList.add('cut-out'); // 페이드 아웃
     setTimeout(() => onDone && onDone(), 320);
@@ -250,5 +313,27 @@ export function initCutsceneScreen({ scenes, vars = {}, onDone }) {
   }
   document.addEventListener('keydown', onKey);
 
-  showScene(0);
+  // ── 에셋 프리로딩 ────────────────────────────────────────
+  // 예전에는 장면이 바뀔 때마다 그 자리에서 이미지를 받아왔다. 받아오는 동안에도
+  // 대사는 이미 타이핑되고 있어서, 글을 읽는 도중 배경이 불쑥 바뀌는 일이 생겼다.
+  // (노주인 PNG는 1.8MB라 특히 늦게 떴다)
+  //
+  // 이제 첫 장면 에셋만 짧게 기다렸다가 시작하고, 나머지는 백그라운드로 데워 둔다.
+  // 그래서 이후 장면 전환은 네트워크를 기다리지 않고 즉시 크로스페이드된다.
+  const first = script[0] || {};
+  const rest = [];
+  for (let i = 1; i < script.length; i += 1) {
+    if (script[i].background) rest.push(script[i].background);
+    if (script[i].character) rest.push(script[i].character);
+  }
+
+  Promise.race([
+    Promise.all([preloadImage(first.background), preloadImage(first.character)]),
+    delay(FIRST_SCENE_WAIT_MS), // 에셋이 느리거나 없어도 컷신이 멈추지 않게
+  ]).then(() => {
+    if (finished) return; // 기다리는 사이 건너뛰기를 눌렀다면 그만둔다
+    showScene(0, { instant: true });
+    // 남은 장면은 재생 중에 조용히 받아 둔다
+    [...new Set(rest)].forEach(preloadImage);
+  });
 }

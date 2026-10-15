@@ -172,13 +172,14 @@ function startConversation(session, stage, ctx) {
     totalStages: ctx.totalStages, // 우상단 EP 노드 개수(표시용)
     // 종료 시: 최종 게이지를 최신 점수로, 대화 로그(turns)와 함께 저장
     // 결과는 선택한 트랙의 stageResults_{track}에 들어간다 (트랙 간 간섭 없음)
-    async onEnd(finalScore, turns) {
+    // meta: 난이도·최고점·최종 게이지 — 리포트가 "어디서 갈렸는지"를 짚는 근거가 된다
+    async onEnd(finalScore, turns, meta) {
       const saved = await saveStageResult(
         session.roomCode,
         session.playerId,
         session.track,
         stage.id,
-        { stageScore: finalScore, turnCount: turns.length, turns },
+        { stageScore: finalScore, turnCount: turns.length, turns, meta },
         ctx
       );
       // saveStageResult가 이미 계산해 둔 트랙 상태를 그대로 쓴다 (채점 로직은 건드리지 않는다)

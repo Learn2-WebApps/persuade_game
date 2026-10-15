@@ -444,6 +444,266 @@
   display: inline-block;
 }
 
+/* ── 난이도 배지 (우상단 HUD) ── */
+.vn-hud .diff-pill {
+  align-self: flex-end;
+  padding: 3px 11px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(168, 106, 36, 0.3);
+  font-size: 11px;
+  font-weight: 800;
+  color: #8a5a22;
+  white-space: nowrap;
+}
+
+/* 성공선을 한 번이라도 넘겼으면 목표 표식이 빛난다 */
+.vn.reached-goal .gauge-goal {
+  background: var(--accent-glow, #ffd98a);
+  box-shadow: 0 0 8px 2px rgba(255, 200, 110, 0.9);
+}
+
+/* ── 단서 미터 (우상단 HUD) ── */
+.vn-hud .clue-meter {
+  align-self: flex-end;
+  padding: 3px 11px;
+  border-radius: 999px;
+  background: rgba(62, 44, 74, 0.82);
+  border: 1px solid rgba(255, 225, 170, 0.45);
+  font-size: 11px;
+  font-weight: 800;
+  color: #ffe6b8;
+  white-space: nowrap;
+  transition: transform 0.25s ease;
+}
+
+.vn-hud .clue-meter.bump {
+  transform: scale(1.18);
+}
+
+/* ── 단서 획득 토스트 ── */
+.clue-toast {
+  position: absolute;
+  left: 50%;
+  top: 76px;
+  transform: translate(-50%, -12px);
+  z-index: 38;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 11px 18px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(48, 34, 58, 0.96), rgba(70, 48, 62, 0.96));
+  border: 1px solid rgba(255, 220, 160, 0.4);
+  box-shadow: 0 10px 28px rgba(30, 18, 40, 0.42);
+  max-width: min(92vw, 520px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.clue-toast.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.clue-toast .clue-icon {
+  font-size: 19px;
+}
+
+.clue-toast .clue-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.clue-toast .clue-text strong {
+  font-size: 13px;
+  font-weight: 900;
+  color: #ffe6b8;
+}
+
+.clue-toast .clue-text span {
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: rgba(255, 236, 208, 0.82);
+  word-break: keep-all;
+}
+
+/* ── 설득 성공 배너 ── */
+.goal-banner {
+  position: absolute;
+  left: 50%;
+  top: 76px;
+  transform: translate(-50%, -14px);
+  z-index: 40;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.goal-banner.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+  pointer-events: auto;
+}
+
+.goal-banner .goal-inner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(255, 249, 238, 0.97), rgba(255, 238, 209, 0.97));
+  border: 1px solid rgba(168, 106, 36, 0.4);
+  box-shadow: 0 10px 30px rgba(90, 60, 20, 0.28);
+  max-width: min(92vw, 560px);
+}
+
+.goal-banner .goal-spark {
+  font-size: 20px;
+  color: #d79a35;
+  animation: goal-twinkle 1.6s ease-in-out infinite;
+}
+
+@keyframes goal-twinkle {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.3); opacity: 0.65; }
+}
+
+.goal-banner .goal-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.goal-banner .goal-text strong {
+  font-size: 14px;
+  font-weight: 900;
+  color: #7a4a12;
+}
+
+.goal-banner .goal-text span {
+  font-size: 12px;
+  line-height: 1.5;
+  color: #7a6a52;
+  word-break: keep-all;
+}
+
+.goal-banner .goal-finish {
+  flex-shrink: 0;
+  border: none;
+  border-radius: 999px;
+  padding: 9px 16px;
+  background: linear-gradient(135deg, var(--pink), var(--pink-deep));
+  color: #fff;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 5px 14px rgba(168, 106, 36, 0.45);
+}
+
+.goal-banner .goal-finish:hover {
+  transform: translateY(-1px);
+}
+
+/* 결과 카드의 보조 설명 (최고점에서 내려온 경우) */
+.result-card .result-note {
+  margin-top: -2px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #8a7a62;
+  word-break: keep-all;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .goal-banner .goal-spark { animation: none; }
+}
+
+/* 마이크 버튼 — 미지원 브라우저에서는 [hidden]으로 아예 빠진다 */
+.vn-input .mic-btn {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(110, 80, 140, 0.16);
+  transition: transform 0.15s ease, background 0.18s ease, box-shadow 0.18s ease;
+}
+
+.vn-input .mic-btn[hidden] {
+  display: none;
+}
+
+.vn-input .mic-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(168, 106, 36, 0.4);
+}
+
+.vn-input .mic-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+/* 녹음 중 — 붉게 물들이고 심장박동처럼 번지는 고리로 "듣고 있음"을 알린다 */
+.vn-input .mic-btn.listening {
+  background: linear-gradient(135deg, #e0564f, #b8322c);
+  border-color: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 6px 18px rgba(184, 50, 44, 0.5);
+}
+
+.vn-input .mic-btn.listening::after {
+  content: '';
+  position: absolute;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid rgba(224, 86, 79, 0.75);
+  animation: mic-pulse 1.4s ease-out infinite;
+  pointer-events: none;
+}
+
+.vn-input .mic-btn.listening {
+  position: relative;
+}
+
+@keyframes mic-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1.65);
+    opacity: 0;
+  }
+}
+
+/* 듣는 중 안내 — 평소에는 비어 있어 자리만 차지하지 않는다 */
+.vn-input-meta .mic-status {
+  flex: 1;
+  text-align: center;
+  font-weight: 800;
+  color: #a8531f;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vn-input .mic-btn.listening::after {
+    animation: none;
+  }
+}
+
 .vn-input-meta {
   display: flex;
   align-items: center;

@@ -181,12 +181,28 @@ function describeApiKey(key) {
   return `${key.slice(0, 4)}…  길이 ${key.length}`;
 }
 
-export async function callGemini(env, model, prompt, generationConfig) {
+/**
+ * @param {Array<{mimeType: string, data: string}>} [mediaParts]
+ *        프롬프트와 함께 보낼 오디오·이미지 등 (base64). 예: 학습자 발화 녹음 → 어조 평가.
+ *        빈 배열이면 지금까지와 완전히 동일한 텍스트 전용 요청이 나간다.
+ */
+export async function callGemini(env, model, prompt, generationConfig, mediaParts = []) {
   const apiKey = env.GEMINI_API_KEY;
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${apiKey}`;
 
-  // (1) 키 확인 + 호출 시작 로그
-  console.log(`[gemini] 호출 시작 model=${model} key=${describeApiKey(apiKey)} prompt=${prompt.length}자`);
+  // 미디어는 프롬프트보다 앞에 두는 편이 인식이 안정적이다 (Gemini 권장 순서)
+  const parts = [
+    ...mediaParts.map((m) => ({ inlineData: { mimeType: m.mimeType, data: m.data } })),
+    { text: prompt },
+  ];
+
+  // (1) 키 확인 + 호출 시작 로그 (오디오 원본은 절대 로그에 남기지 않고 크기만 남긴다)
+  const mediaLog = mediaParts.length
+    ? ` media=${mediaParts.map((m) => `${m.mimeType}/${Math.round((m.data?.length || 0) / 1024)}KB`).join(',')}`
+    : '';
+  console.log(
+    `[gemini] 호출 시작 model=${model} key=${describeApiKey(apiKey)} prompt=${prompt.length}자${mediaLog}`
+  );
 
   const startedAt = Date.now();
   let res;
@@ -195,7 +211,7 @@ export async function callGemini(env, model, prompt, generationConfig) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        contents: [{ role: 'user', parts }],
         generationConfig: {
           responseMimeType: 'application/json',
           ...generationConfig,
