@@ -12,7 +12,9 @@
     "dev:web": "vite",
     "dev:api": "wrangler pages dev public --port 8788",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "sim": "node scripts/simulate.mjs",
+    "assets:strip-bg": "node scripts/strip-white-bg.mjs"
   },
   "dependencies": {
     "firebase": "^11.0.0",
