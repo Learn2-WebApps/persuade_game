@@ -22,6 +22,11 @@ export const TRACKS = {
     // 트랙 선택 카드에 쓰는 문구 (책의 "장" 은유)
     cardTitle: '업무의 장',
     cardDesc: '일터에서 마음을 움직이기',
+    // ⚠️ 잠금 — 시나리오 보강(여는 열쇠·숨은 의도 단계·학습 포인트)과 캐릭터·배경
+    //    에셋이 아직 없다. 일상 트랙과 품질 차이가 커서 학습자에게는 닫아 둔다.
+    //    준비가 끝나면 이 두 줄만 지우면 바로 열린다.
+    locked: true,
+    lockedNote: '아직 쓰이는 중입니다',
   },
   life: {
     key: 'life',
@@ -45,6 +50,18 @@ export const TRACK_SELECT_ORDER = ['life', 'work'];
 
 /** 유효한 트랙 키인지 */
 export const isTrack = (track) => TRACK_KEYS.includes(track);
+
+/**
+ * 학습자에게 아직 열지 않은 트랙인지.
+ * 관리자 화면·채점·리포트는 영향을 받지 않는다 — 학습자의 트랙 선택만 막는다.
+ */
+export const isTrackLocked = (track) => Boolean(TRACKS[track]?.locked);
+
+/** 잠금 사유 문구 (카드에 표시) */
+export const trackLockedNote = (track) => TRACKS[track]?.lockedNote || '준비 중입니다';
+
+/** 지금 학습자가 고를 수 있는 트랙만 */
+export const playableTracks = () => TRACK_KEYS.filter((t) => !isTrackLocked(t));
 
 /** 트랙 키를 안전하게 정규화 — 모르는 값이면 기본 트랙 */
 export const normalizeTrack = (track) => (isTrack(track) ? track : DEFAULT_TRACK);

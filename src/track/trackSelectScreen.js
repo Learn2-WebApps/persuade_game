@@ -9,9 +9,11 @@
  *   · 아직 안 푼 트랙 → 카드를 눌러 플레이
  *   · 이미 완료한 트랙 → "완료됨" 표시 + [리포트 다시 보기]
  *   · 한 트랙이라도 완료했으면 하단 [게임 마치기]가 열린다 (→ 아웃트로 컷신)
+ *   · 잠긴 트랙(TRACKS[key].locked) → 눌리지 않고 잠금 사유만 보여준다
+ *     잠금은 src/common/tracks.js에서 끈다 — 화면 코드는 건드릴 필요 없다
  */
 
-import { TRACKS, TRACK_SELECT_ORDER } from '../common/tracks.js';
+import { TRACKS, TRACK_SELECT_ORDER, isTrackLocked, trackLockedNote } from '../common/tracks.js';
 import { fetchPlayer, readProgress } from '../common/firebase.js';
 
 const escapeHtml = (s) =>
@@ -86,25 +88,33 @@ export async function initTrackSelectScreen({ session, onSelectTrack, onShowRepo
         ${TRACK_SELECT_ORDER.map((key, i) => {
           const t = TRACKS[key];
           const done = isFinished(key);
+          // 아직 열지 않은 장 — 눌리지 않고, 진행도 대신 잠금 사유를 보여준다
+          const locked = isTrackLocked(key);
           return `
-          <article class="chapter chapter-${key}${done ? ' is-done' : ''}">
+          <article class="chapter chapter-${key}${done ? ' is-done' : ''}${locked ? ' is-locked' : ''}">
             <button class="chapter-open" type="button" data-track="${key}"
-                    aria-label="${escapeHtml(t.cardTitle)} 펼치기">
+                    ${locked ? 'disabled aria-disabled="true"' : ''}
+                    aria-label="${escapeHtml(t.cardTitle)}${locked ? ' — 아직 펼칠 수 없습니다' : ' 펼치기'}">
               <span class="chapter-plate">
                 <span class="chapter-art" style="background-image:url('${plateImage(key)}')"></span>
                 ${done ? '<span class="chapter-ribbon" aria-hidden="true"></span>' : ''}
+                ${locked ? '<span class="chapter-seal" aria-hidden="true">✦</span>' : ''}
               </span>
               <span class="chapter-body">
                 <span class="chapter-num">제 ${i + 1} 장</span>
                 <span class="chapter-title">${escapeHtml(t.cardTitle)}</span>
                 <span class="chapter-desc">${escapeHtml(t.cardDesc)}</span>
                 <span class="chapter-meta">
-                  <span class="chapter-dots" aria-hidden="true">${episodeDots(key)}</span>
-                  <span class="chapter-state">${escapeHtml(stateLine(key))}</span>
+                  ${
+                    locked
+                      ? `<span class="chapter-locked-note">${escapeHtml(trackLockedNote(key))}</span>`
+                      : `<span class="chapter-dots" aria-hidden="true">${episodeDots(key)}</span>
+                         <span class="chapter-state">${escapeHtml(stateLine(key))}</span>`
+                  }
                 </span>
               </span>
             </button>
-            ${done ? `<button class="chapter-report" type="button" data-report-track="${key}">읽은 기록 보기</button>` : ''}
+            ${done && !locked ? `<button class="chapter-report" type="button" data-report-track="${key}">읽은 기록 보기</button>` : ''}
           </article>`;
         }).join('')}
       </div>
@@ -124,7 +134,11 @@ export async function initTrackSelectScreen({ session, onSelectTrack, onShowRepo
   </div>`;
 
   app.querySelectorAll('.chapter-open').forEach((btn) => {
-    btn.addEventListener('click', () => onSelectTrack(btn.dataset.track));
+    // 잠긴 장은 disabled라 클릭 자체가 안 들어오지만, 혹시 몰라 한 번 더 막는다
+    btn.addEventListener('click', () => {
+      if (isTrackLocked(btn.dataset.track)) return;
+      onSelectTrack(btn.dataset.track);
+    });
   });
   app.querySelectorAll('.chapter-report').forEach((btn) => {
     btn.addEventListener('click', () => onShowReport && onShowReport(btn.dataset.reportTrack));

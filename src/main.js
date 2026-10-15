@@ -28,7 +28,7 @@ import { initCutsceneScreen } from './cutscene/cutsceneScreen.js';
 import { initEndingScreen } from './ending/endingScreen.js';
 import { OPENING_SCENES, OUTRO_SCENES } from './cutscene/cutsceneData.js';
 import { saveStageResult } from './common/firebase.js';
-import { isTrack, normalizeTrack } from './common/tracks.js';
+import { isTrack, normalizeTrack, isTrackLocked } from './common/tracks.js';
 import { loadSession, saveSession, updateSession, clearSession } from './common/session.js';
 
 // ── 컷신 재생 기록 (방·플레이어 단위) ─────────────────────────
@@ -126,6 +126,11 @@ function showMap() {
   if (!session) return showEntry();
   // 트랙이 없으면(첫 입장·이전 버전 세션) 트랙 선택부터
   if (!isTrack(session.track)) return showTrackSelect();
+  // 잠긴 트랙은 들어갈 수 없다 — 잠그기 전에 그 트랙을 고른 세션이 남아 있을 수 있다
+  if (isTrackLocked(session.track)) {
+    updateSession({ track: null });
+    return showTrackSelect();
+  }
 
   initStageMapScreen({
     session,

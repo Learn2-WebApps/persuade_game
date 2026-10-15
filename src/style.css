@@ -2133,6 +2133,57 @@ body::before {
   color: var(--gold);
 }
 
+/* ── 아직 쓰이지 않은 장 ─────────────────────
+   잠긴 트랙은 "막힌 문"이 아니라 "아직 안 쓴 원고"처럼 보이게 한다.
+   자물쇠 아이콘 대신 삽화를 흐리게 덮고 봉인 표식을 올린다.
+   (잠금 자체는 src/common/tracks.js의 locked 플래그로 켜고 끈다) */
+.chapter.is-locked {
+  opacity: 0.78;
+}
+
+.chapter.is-locked .chapter-open {
+  cursor: default;
+  filter: saturate(0.45);
+}
+
+.chapter.is-locked .chapter-open:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* 삽화를 잉크가 덜 마른 듯 흐리게 */
+.chapter.is-locked .chapter-art {
+  filter: blur(2.5px) grayscale(0.5) brightness(0.82);
+}
+
+/* 봉인 표식 — 삽화 가운데 금빛 인장 */
+.chapter-seal {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 214, 150, 0.6);
+  background: rgba(46, 32, 20, 0.62);
+  color: rgba(255, 221, 171, 0.9);
+  font-size: 17px;
+  box-shadow: 0 4px 14px rgba(20, 12, 6, 0.45);
+  backdrop-filter: blur(2px);
+}
+
+.chapter-locked-note {
+  font-family: var(--serif);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--ink-soft);
+  font-style: italic;
+}
+
 /* 다 읽은 장의 [읽은 기록 보기] — 종이 아래 끼워 둔 쪽지처럼 */
 .chapter-report {
   padding: 8px 18px;
